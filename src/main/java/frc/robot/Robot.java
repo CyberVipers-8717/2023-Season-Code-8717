@@ -112,8 +112,10 @@ public class Robot extends TimedRobot {
       if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTank();
       // tank drive
       if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-        double[] modifiedCommands = limelight.autoCenter(); 
-        driveTrain.tank(modifiedCommands[0]*.3,modifiedCommands[1]*.3);
+        double[] modifiedCommands = limelight.autoCenter();
+        driveTrain.tank(modifiedCommands[0]*.4,modifiedCommands[1]*.4);
+        SmartDashboard.putNumber("First auto thing", modifiedCommands[0]);
+        SmartDashboard.putNumber("sec auto thing", modifiedCommands[1]);
       } else {
         if (driveTrain.getTank()) {
           double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);

@@ -2,6 +2,8 @@ package frc.robot;
 
 import java.lang.Math;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class Lime {
     //change these to match desired set up  
     // public static final double reflectiveHeight = 40.0; 
@@ -21,18 +23,17 @@ public class Lime {
         double leftCommand = 0;
         double rightCommand = 0;
         double headingError = -LimelightHelpers.getTX("limelight");
+        SmartDashboard.putNumber("heading error", headingError);
         double steeringAdjust = 0; 
         if (Math.abs(headingError) > 1) {
             if (headingError < 0) {
                 steeringAdjust = controlConstant * headingError + minCommand;
             } else {
-                steeringAdjust = controlConstant - minCommand; 
+                steeringAdjust = controlConstant * headingError - minCommand; 
             }
         }
         leftCommand += steeringAdjust; 
         rightCommand -= steeringAdjust;
         return new double[] {leftCommand, rightCommand}; 
     }
-    
-
 }
