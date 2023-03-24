@@ -22,7 +22,7 @@ public class Lime {
     public double[] autoCenter() {
         double leftCommand = 0;
         double rightCommand = 0;
-        double headingError = -LimelightHelpers.getTX("limelight");
+        double headingError = LimelightHelpers.getTX("limelight");
         SmartDashboard.putNumber("heading error", headingError);
         double steeringAdjust = 0; 
         if (Math.abs(headingError) > 1) {
@@ -34,6 +34,7 @@ public class Lime {
         }
         leftCommand += steeringAdjust; 
         rightCommand -= steeringAdjust;
+        SmartDashboard.putNumber("ster adj", steeringAdjust);
         return new double[] {leftCommand, rightCommand}; 
     }
 }
