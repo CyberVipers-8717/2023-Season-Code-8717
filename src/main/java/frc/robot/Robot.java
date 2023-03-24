@@ -13,9 +13,6 @@
  *            Rotate to specific angle
  *            Rotate to specific grid height
  *            Rotate to home
- * 
- *    Github
- *        figure out what is happening
  */
 
 package frc.robot;
@@ -115,12 +112,8 @@ public class Robot extends TimedRobot {
       if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTank();
       // tank drive
       if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-        double leftAdjust = 0;
-        double rightAdjust = 0;
-        double adjustedDistance = limelight.getAdjustedDistance();
-        leftAdjust += adjustedDistance;
-        rightAdjust += adjustedDistance; 
-        driveTrain.tank(leftAdjust*.65, rightAdjust*.65);
+        double[] modifiedCommands = limelight.autoCenter(); 
+        driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
       } else {
         if (driveTrain.getTank()) {
           double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
