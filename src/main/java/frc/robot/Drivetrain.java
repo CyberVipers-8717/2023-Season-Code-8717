@@ -82,7 +82,7 @@ public class Drivetrain {
     encoderRB.setPosition(0);
   }
 
-  /** Calls the arcadeDrive method of the internal {@link DifferentialDrive} object. 
+  /** Calls the arcadeDrive method of the internal {@link DifferentialDrive} object.
    * @param forward Robot's speed along the X axis. Forward is positive.
    * @param rotation Robot's rotation speed around the Z axis. Counterclockwise is positive.
    */
@@ -91,6 +91,13 @@ public class Drivetrain {
     rotation *= arcadeRotationScale;
     if (kReverseFlag) forward *= -1;
     diffDrive.arcadeDrive(forward, rotation);
+  }
+  
+  /** Calls the arcadeDrive method of the internal {@link DifferentialDrive} object.
+   * @param vals A double array containing the forward and rotation values to be passed on to arcadeDrive method of the {@link DifferentialDrive} object.
+  */
+  public void arcade(double[] vals) {
+    arcade(vals[0], vals[1]);
   }
 
   /** Calls the tankDrive method of the internal {@link DifferentialDrive} object.
@@ -102,6 +109,13 @@ public class Drivetrain {
     right *= tankScale;
     if (!kReverseFlag) diffDrive.tankDrive(left, right);
     else diffDrive.tankDrive(-right, -left);
+  }
+
+  /** Calls the tankDrive method of the internal {@link DifferentialDrive} object.
+   * @param vals A double array containing the left and right values to be passed on to tankDrive method of the {@link DifferentialDrive} object.
+  */
+  public void tank(double[] vals) {
+    tank(vals[0], vals[1]);
   }
 
   /** Sets the {@link IdleMode} of all drive motors.
