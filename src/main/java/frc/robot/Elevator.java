@@ -10,20 +10,16 @@ import frc.robot.Constants.ElevatorEncoderConstants;
 
 public class Elevator {
     /* Constants */
-    public static final int pulleyIndex = 5;
-    public static final int leftIndex = 6;
-    public static final int rightIndex = 7;
-    public static final MotorType motorType = MotorType.kBrushless;
     public static final double rotateArmDownScale = 0.6;
     public static final double rotateArmUpScale = 1;
     public static final double elevatorExtendScale = 0.55;
     public static final double elevatorRetractScale = 0.55;
 
     /* Variables */
-    public CANSparkMax elevatorMotorL = new CANSparkMax(leftIndex, motorType);
-    public CANSparkMax elevatorMotorR = new CANSparkMax(rightIndex, motorType);
+    public CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
+    public CANSparkMax elevatorMotorR = new CANSparkMax(7, MotorType.kBrushless);
     public MotorControllerGroup elevatorMotors = new MotorControllerGroup(elevatorMotorL, elevatorMotorR);
-    public CANSparkMax pulleyMotor = new CANSparkMax(pulleyIndex, motorType);
+    public CANSparkMax pulleyMotor = new CANSparkMax(5, MotorType.kBrushless);
     public RelativeEncoder pulleyEncoder = pulleyMotor.getEncoder();
     public RelativeEncoder elevatorEncoderL = elevatorMotorL.getEncoder();
     public RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
