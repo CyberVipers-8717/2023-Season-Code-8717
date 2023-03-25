@@ -1,21 +1,6 @@
-/*  Robot todo list
- *
- *    Auto
- *        Use pathweaver
- * 
- *    Limelight
- *        Put limelight on robot and add code
- * 
- *    Elevator
- *        Add some separate commands for abstraction and ease of use in auto
- *            Extend to specific distance
- *            Retract to home
- *            Rotate to specific angle
- *            Rotate to specific grid height
- *            Rotate to home
- */
-
 package frc.robot;
+
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -25,6 +10,12 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
+
+/*
+ * Robot todo list
+ * 
+ * idk
+ */
 
 public class Robot extends TimedRobot {
   public Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
@@ -46,18 +37,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    SmartDashboard.putBoolean("Tank Drive", driveTrain.getTank());
+    SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Controller", usingController);
     SmartDashboard.putBoolean("Using Joystick", !usingController);
     SmartDashboard.putNumber("Elevator Average", elevator.getAveragePosition());
     SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition()); 
     SmartDashboard.putNumber("Current", pcmCompressor.getCurrent());
-    SmartDashboard.putBoolean("Hard Braking", driveTrain.getHardBraking());
+    SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !targetingCube);
     SmartDashboard.putNumber("Current Pipeline", LimelightHelpers.getCurrentPipelineIndex("limelight"));
-    SmartDashboard.putNumber("Left Wheel", driveTrain.getLeft());
-    SmartDashboard.putNumber("Right Wheel", driveTrain.getRight());
+    SmartDashboard.putNumber("Left Wheel", driveTrain.getLeftPosition());
+    SmartDashboard.putNumber("Right Wheel", driveTrain.getRightPosition());
   }
 
   @Override
@@ -92,15 +83,15 @@ public class Robot extends TimedRobot {
     // zero encoders
     if (controller.getRawButtonPressed(ControllerConstants.zeroEncoders)) {
       elevator.zeroEncoders();
-      driveTrain.zeroEncoders();
+      driveTrain.zeroDriveEncoders();
     }
     
     // controller drive code
     if (usingController) {
       // tank drive and reverse
-      driveTrain.defaultSettings();
+      driveTrain.defaultFlags();
       // braking
-      if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleMotorIdle();
+      if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleDriveIdle();
 
       // drive code
       double forward = controller.getRawAxis(ControllerConstants.arcadeForward);
@@ -109,13 +100,13 @@ public class Robot extends TimedRobot {
       driveTrain.arcade(forward, rotation);
     } else {  //joystick
       // tank drive and reverse buttons
-      if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTank();
+      if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
       // tank drive
       if (stickR.getRawButton(JoystickConstants.limelightMode)) {
         double[] modifiedCommands = limelight.autoCenter();
         driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
       } else {
-        if (driveTrain.getTank()) {
+        if (Drivetrain.kTankFlag) {
           double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
           double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
           driveTrain.tank(left, right);
@@ -127,7 +118,7 @@ public class Robot extends TimedRobot {
       }
 
       // braking
-      if (stickR.getRawButtonPressed(2)) driveTrain.toggleMotorIdle();
+      if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
     }
 
     // manual pulley
@@ -162,14 +153,14 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     targetingCube = true;
-    driveTrain.defaultSettings();
-    driveTrain.stopMotors();
+    driveTrain.defaultFlags();
+    driveTrain.stopMotor();
     elevator.stopAllMotors();
   }
 
   @Override
   public void disabledPeriodic() {
-    driveTrain.stopMotors();
+    driveTrain.stopMotor();
     elevator.stopAllMotors();
   }
 
