@@ -1,11 +1,3 @@
-/*
- * Robot todo list
- * 
- * Refactor the code
- * 
- * Write autonomous code
- */
-
 package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
