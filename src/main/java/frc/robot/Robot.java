@@ -123,26 +123,26 @@ public class Robot extends TimedRobot {
       if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
     }
 
-    // manual pulley
-    if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
-      elevator.rotateArmDown(0.4);
-    } else if (controller.getRawButton(ControllerConstants.rotateArmUpIndex)) {
-      elevator.rotateArmUp(0.8);
-    } else {
-      elevator.stopPulley();
-    }
-
-    // manual elevator
-    if (controller.getRawButton(ControllerConstants.elevatorExtend)) {
-      elevator.extendArm(0.35);
-    } else if (controller.getRawButton(ControllerConstants.elevatorRetract)) {
-      elevator.retractArm(0.35);
-    } else {
-      elevator.stopElevator();
-    }
-
     // auto pulley and elevator
-    elevator.dealWithPOV(controller.getPOV(), targetingCube);
+    if (controller.getPOV()!=-1) {
+      // manual pulley
+      if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
+        elevator.rotateArmDown(0.4);
+      } else if (controller.getRawButton(ControllerConstants.rotateArmUpIndex)) {
+        elevator.rotateArmUp(0.8);
+      } else {
+        elevator.stopPulley();
+      }
+
+      // manual elevator
+      if (controller.getRawButton(ControllerConstants.elevatorExtend)) {
+        elevator.extendArm(0.35);
+      } else if (controller.getRawButton(ControllerConstants.elevatorRetract)) {
+        elevator.retractArm(0.35);
+      } else {
+        elevator.stopElevator();
+      }
+    } else elevator.dealWithPOV(controller.getPOV(), targetingCube);
 
     // hand
     if (controller.getRawButtonPressed(ControllerConstants.handOpen)) {

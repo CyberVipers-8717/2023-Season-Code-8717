@@ -14,10 +14,10 @@ public class Elevator {
     public static final int leftIndex = 6;
     public static final int rightIndex = 7;
     public static final MotorType motorType = MotorType.kBrushless;
-    public static final double rotateArmDownScale = 0.5;
+    public static final double rotateArmDownScale = 0.6;
     public static final double rotateArmUpScale = 1;
-    public static final double elevatorExtendScale = 0.35;
-    public static final double elevatorRetractScale = 0.35;
+    public static final double elevatorExtendScale = 0.55;
+    public static final double elevatorRetractScale = 0.55;
 
     /* Variables */
     public CANSparkMax elevatorMotorL = new CANSparkMax(leftIndex, motorType);

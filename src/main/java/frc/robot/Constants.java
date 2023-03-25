@@ -8,6 +8,8 @@ public class Constants {
         // T indicates cone (Triangle)
         public static final double groundP = 210;
         public static final double groundE = 4;
+        public static final double quickSP = 13;
+        public static final double quickSE = 1.5;
         public static final double restP = 2;
         public static final double restE = 1.5;
         // all cube heights
@@ -15,15 +17,15 @@ public class Constants {
         public static final double highSE = 77.5; // checked
         public static final double midSP = 73.5; // checked
         public static final double midSE = 18.5; // checked
-        public static final double doubleSP = 48;
-        public static final double doubleSE = 4;
+        public static final double doubleSP = 39;
+        public static final double doubleSE = 1;
         // all cone heights
-        public static final double highTP = 95; // checked this one sucks since cone is barely far enough
-        public static final double highTE = 91.5; // checked
-        public static final double midTP = 85; // checked
-        public static final double midTE = 48; // checked
-        public static final double doubleTP = 48;
-        public static final double doubleTE = 4;
+        public static final double highTP = 90; // checked this one sucks since cone is barely far enough
+        public static final double highTE = 91; // checked
+        public static final double midTP = 74.5; // checked
+        public static final double midTE = 41; // checked
+        public static final double doubleTP = 36;
+        public static final double doubleTE = 1;
     }
     public static final class ControllerConstants {
         public static final int USBindex = 1;
