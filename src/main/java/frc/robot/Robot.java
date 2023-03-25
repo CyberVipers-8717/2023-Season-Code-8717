@@ -1,3 +1,11 @@
+/*
+ * Robot todo list
+ * 
+ * Refactor the code
+ * 
+ * Write autonomous code
+ */
+
 package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -10,12 +18,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
-
-/*
- * Robot todo list
- * 
- * idk
- */
 
 public class Robot extends TimedRobot {
   public Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
