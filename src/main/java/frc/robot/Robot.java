@@ -126,7 +126,6 @@ public class Robot extends TimedRobot {
         }
       }
 
-     
       // braking
       if (stickR.getRawButtonPressed(2)) driveTrain.toggleMotorIdle();
     }
