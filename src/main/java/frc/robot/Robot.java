@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
@@ -31,6 +32,7 @@ public class Robot extends TimedRobot {
   public Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
   public DoubleSolenoid handSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
   public int maxPipelines = 3;
+  public Timer autoTimer = new Timer();
 
   @Override
   public void robotInit() {
@@ -54,10 +56,30 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    driveTrain.zeroDriveEncoders();
+    autoTimer.reset();
+    autoTimer.start();
+  }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    driveTrain.diffDrive.feed();
+    if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
+      elevator.dealWithPOV(0, true);
+    } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
+      handSolenoid.set(Value.kForward);
+    }
+    if (autoTimer.get() > 2.6) elevator.dealWithPOV(270, true);
+
+    // if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
+    //   driveTrain.moveWheelsTo(50, 50);
+    // }
+
+    if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
+      driveTrain.moveWheelsTo(41, 41);
+    }
+  }
 
   @Override
   public void teleopInit() {
@@ -124,7 +146,7 @@ public class Robot extends TimedRobot {
     }
 
     // auto pulley and elevator
-    if (controller.getPOV()!=-1) {
+    if (controller.getPOV()==-1) {
       // manual pulley
       if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
         elevator.rotateArmDown(0.4);

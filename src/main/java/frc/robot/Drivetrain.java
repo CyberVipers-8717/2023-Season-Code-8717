@@ -33,8 +33,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
  */
 
 public class Drivetrain {
-  private static final double arcadeForwardScale = 0.85;
-  private static final double arcadeRotationScale = 0.5;
+  private static final double arcadeForwardScale = 0.95;
+  private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
 
   public static boolean kReverseFlag = false;
@@ -158,60 +158,60 @@ public class Drivetrain {
 
   //to eventually write correctly
 
-  // public void moveWheelsTo(double left, double right) {
-  //     moveLeftWheelTo(left);
-  //     moveRightWheelTo(right);
-  // }
+  public void moveWheelsTo(double left, double right) {
+      moveLeftWheelTo(left);
+      moveRightWheelTo(right);
+  }
 
-  // public void moveLeftWheelTo(double target) {
-  //     double diff = target - getLeft(); 
-  //     double sign = Math.signum(diff);
-  //     double absDiff = Math.abs(diff);
-  //     double minDiff = 0.5;
-  //     double scaleDiff = 5;
-  //     double adjusted = scaleDiff - minDiff;
-  //     double lowest = 0.2;
-  //     double temp = 1;
-  //     if (absDiff < minDiff) {
-  //         leftMotors.stopMotor();
-  //     } else {
-  //         if (absDiff < scaleDiff) {
-  //             temp = map(absDiff, minDiff, adjusted, lowest, 1);
-  //         }
-  //         if (sign == -1) {
-  //             leftMotors.set(0.175*temp);
-  //         } else if (sign == 1) {
-  //             leftMotors.set(-0.175*temp);
-  //         } else {
-  //             leftMotors.stopMotor();
-  //         }
-  //     }
-  // }
+  public void moveLeftWheelTo(double target) {
+      double diff = target - getLeftPosition(); 
+      double sign = Math.signum(diff);
+      double absDiff = Math.abs(diff);
+      double minDiff = 0.5;
+      double scaleDiff = 5;
+      double adjusted = scaleDiff - minDiff;
+      double lowest = 0.2;
+      double temp = 1;
+      if (absDiff < minDiff) {
+          leftMotors.stopMotor();
+      } else {
+          if (absDiff < scaleDiff) {
+              temp = map(absDiff, minDiff, adjusted, lowest, 1);
+          }
+          if (sign == -1) {
+              leftMotors.set(-0.2*temp);
+          } else if (sign == 1) {
+              leftMotors.set(0.2*temp);
+          } else {
+              leftMotors.stopMotor();
+          }
+      }
+  }
 
-  // public void moveRightWheelTo(double target) {
-  //     double diff = target - getRight();
-  //     double sign = Math.signum(diff);
-  //     double absDiff = Math.abs(diff);
-  //     double minDiff = 0.5;
-  //     double scaleDiff = 5;
-  //     double adjusted = scaleDiff - minDiff;
-  //     double lowest = 0.2;
-  //     double temp = 1;
-  //     if (absDiff < minDiff) {
-  //         rightMotors.stopMotor();
-  //     } else {
-  //         if (absDiff < scaleDiff) {
-  //             temp = map(absDiff, minDiff, adjusted, lowest, 1);
-  //         }
-  //         if (sign == -1) {
-  //             rightMotors.set(-0.175*temp);
-  //         } else if (sign == 1) {
-  //             rightMotors.set(0.175*temp);
-  //         } else {
-  //             rightMotors.stopMotor();
-  //         }
-  //     }
-  // }
+  public void moveRightWheelTo(double target) {
+      double diff = target - getRightPosition();
+      double sign = Math.signum(diff);
+      double absDiff = Math.abs(diff);
+      double minDiff = 0.5;
+      double scaleDiff = 5;
+      double adjusted = scaleDiff - minDiff;
+      double lowest = 0.2;
+      double temp = 1;
+      if (absDiff < minDiff) {
+          rightMotors.stopMotor();
+      } else {
+          if (absDiff < scaleDiff) {
+              temp = map(absDiff, minDiff, adjusted, lowest, 1);
+          }
+          if (sign == -1) {
+              rightMotors.set(-0.2*temp);
+          } else if (sign == 1) {
+              rightMotors.set(0.2*temp);
+          } else {
+              rightMotors.stopMotor();
+          }
+      }
+  }
 
   public double map(double x, double a, double b, double c, double d) {
       return (x-a)/(b-a)*(d-c)+c; // (absDiff - minDiff)/(adjusted - minDiff)*(1 - lowest)+ lowest -- limiter

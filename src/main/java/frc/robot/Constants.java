@@ -24,7 +24,7 @@ public class Constants {
         public static final double highTE = 91; // checked
         public static final double midTP = 74.5; // checked
         public static final double midTE = 41; // checked
-        public static final double doubleTP = 36;
+        public static final double doubleTP = 39.7;
         public static final double doubleTE = 1;
     }
     public static final class ControllerConstants {
