@@ -32,6 +32,8 @@ import frc.robot.Constants.ElevatorEncoderConstants;
  */
 
 public class Elevator {
+  public static boolean targetingCube = true;
+
   private static final double manualRotateDownScale = 0.5;
   private static final double manualRotateUpScale = 0.9;
   private static final double manualExtendScale = 0.35;
@@ -43,8 +45,9 @@ public class Elevator {
 
   private CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
   private CANSparkMax elevatorMotorR = new CANSparkMax(7, MotorType.kBrushless);
-  public MotorControllerGroup elevatorMotors = new MotorControllerGroup(elevatorMotorL, elevatorMotorR);
+  private MotorControllerGroup elevatorMotors = new MotorControllerGroup(elevatorMotorL, elevatorMotorR);
   private CANSparkMax pulleyMotor = new CANSparkMax(5, MotorType.kBrushless);
+
   private RelativeEncoder pulleyEncoder = pulleyMotor.getEncoder();
   private RelativeEncoder elevatorEncoderL = elevatorMotorL.getEncoder();
   private RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
@@ -77,51 +80,65 @@ public class Elevator {
     pulleyEncoder.setPosition(0);
   }
 
-
-
-
-
-
-// extend and retract
-
   /**
    * Runs the elevator motors to either extend or retract the elevator.
-   * @param speed The speed that the elevator motors will run at.
+   * @param speed The speed that the elevator motors will bet set to.
    */
   public void runElevator(double speed) {
     elevatorMotors.set(speed);
   }
 
   /** Extends the elevator at the manual extension speed. */
-  public void extendElevator() {
+  public void extend() {
     runElevator(manualExtendScale);
   }
 
   /** Retracts the elevator at the manual extension speed. */
-  public void retractElevator() {
+  public void retract() {
     runElevator(manualRetractScale);
   }
 
-// rotate down and up
-// specific speeds
-// manual speed
+  /**
+   * Runs the pulley motor to either rotate the arm down or up.
+   * @param speed The speed that the pulley motor will be set to.
+   */
+  public void runPulley(double speed) {
+    pulleyMotor.set(speed);
+  }
+
+  /** Rotates the arm down at the manual rotation down speed. */
+  public void rotateDown() {
+    runPulley(manualRotateDownScale);
+  }
+
+  /** Rotates the arm up at the manual rotation up speed. */
+  public void rotateUp() {
+    runPulley(manualRotateUpScale);
+  }
+
+
+
+
+
+
+
 
 
 
   /** Calls the stopMotor method of the elevator motors. */
-  public void stopElevatorMotor() {
+  public void stopElevator() {
     elevatorMotors.stopMotor();
   }
 
   /** Calls the stopMotor method of the pulley motor. */
-  public void stopPulleyMotor() {
+  public void stopPulley() {
     pulleyMotor.stopMotor();
   }
 
   /** Calls the stopMotor method of the elevator motors and pulley motor. */
   public void stopMotor() {
-    stopElevatorMotor();
-    stopPulleyMotor();
+    stopElevator();
+    stopPulley();
   }
 
 

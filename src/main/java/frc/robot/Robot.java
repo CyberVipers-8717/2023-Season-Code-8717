@@ -25,7 +25,6 @@ public class Robot extends TimedRobot {
   public Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
   public Joystick controller = new Joystick(ControllerConstants.USBindex);
   public boolean usingController = false;
-  public boolean targetingCube = true;
   public Drivetrain driveTrain = new Drivetrain();
   public Elevator elevator = new Elevator();
   public Lime limelight = new Lime();
@@ -44,12 +43,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Controller", usingController);
     SmartDashboard.putBoolean("Using Joystick", !usingController);
-    SmartDashboard.putNumber("Elevator Average", elevator.getAveragePosition());
+    SmartDashboard.putNumber("Elevator Average", elevator.getElevatorPosition());
     SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition()); 
     SmartDashboard.putNumber("Current", pcmCompressor.getCurrent());
     SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
-    SmartDashboard.putBoolean("Targeting Cube", targetingCube);
-    SmartDashboard.putBoolean("Targeting Cone", !targetingCube);
+    SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
+    SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
     SmartDashboard.putNumber("Current Pipeline", LimelightHelpers.getCurrentPipelineIndex("limelight"));
     SmartDashboard.putNumber("Left Wheel", driveTrain.getLeftPosition());
     SmartDashboard.putNumber("Right Wheel", driveTrain.getRightPosition());
@@ -73,11 +72,11 @@ public class Robot extends TimedRobot {
     if (autoTimer.get() > 2.6) elevator.dealWithPOV(270, true);
 
     // if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-    //   driveTrain.moveWheelsTo(50, 50);
+    //   driveTrain.moveTracksTo(50, 50);
     // }
 
     if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-      driveTrain.moveWheelsTo(41, 41);
+      driveTrain.moveTracksTo(41, 41);
     }
   }
 
@@ -101,8 +100,8 @@ public class Robot extends TimedRobot {
     }
 
     // targetting object
-    if (controller.getRawButtonPressed(ControllerConstants.targetCube)) targetingCube = true;
-    if (controller.getRawButtonPressed(ControllerConstants.targetCone)) targetingCube = false;
+    if (controller.getRawButtonPressed(ControllerConstants.targetCube)) Elevator.targetingCube = true;
+    if (controller.getRawButtonPressed(ControllerConstants.targetCone)) Elevator.targetingCube = false;
 
     // zero encoders
     if (controller.getRawButtonPressed(ControllerConstants.zeroEncoders)) {
@@ -149,22 +148,22 @@ public class Robot extends TimedRobot {
     if (controller.getPOV()==-1) {
       // manual pulley
       if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
-        elevator.rotateArmDown(0.4);
+        elevator.rotateDown();
       } else if (controller.getRawButton(ControllerConstants.rotateArmUpIndex)) {
-        elevator.rotateArmUp(0.8);
+        elevator.rotateUp();
       } else {
         elevator.stopPulley();
       }
 
       // manual elevator
       if (controller.getRawButton(ControllerConstants.elevatorExtend)) {
-        elevator.extendArm(0.35);
+        elevator.extend();
       } else if (controller.getRawButton(ControllerConstants.elevatorRetract)) {
-        elevator.retractArm(0.35);
+        elevator.retract();
       } else {
         elevator.stopElevator();
       }
-    } else elevator.dealWithPOV(controller.getPOV(), targetingCube);
+    } else elevator.dealWithPOV(controller.getPOV(), Elevator.targetingCube);
 
     // hand
     if (controller.getRawButtonPressed(ControllerConstants.handOpen)) {
@@ -176,16 +175,16 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    targetingCube = true;
+    Elevator.targetingCube = true;
     driveTrain.defaultFlags();
     driveTrain.stopMotor();
-    elevator.stopAllMotors();
+    elevator.stopMotor();
   }
 
   @Override
   public void disabledPeriodic() {
     driveTrain.stopMotor();
-    elevator.stopAllMotors();
+    elevator.stopMotor();
   }
 
   @Override

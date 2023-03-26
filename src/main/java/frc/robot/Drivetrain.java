@@ -8,34 +8,17 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-/*
- * Structure of Drivetrain class
- * variable declarations
- * constructor
- * encoders
- *    get left average
- *    get right average
- *    zero positions
- * arcade
- * tank
- * driveIdle
- *    set
- *    get
- *    toggle
- * toggle tankFlag
- * toggle reverseFlag
- * default settings
- *    tankFlag = false
- *    reverseFlag = false
- * special auto stuff
- *    move wheels to specific encoder positions
- * stopMotors
- */
-
 public class Drivetrain {
   private static final double arcadeForwardScale = 0.95;
   private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
+  private static final double minimumEncoderDifference = 0.5;
+  private static final double beginScalingDifference = 5;
+  private static final double minimumCommand = 0.2;
+  private static final double maximumCommand = 0.75;
+
+  public static double savedLeftPosition = 0;
+  public static double savedRightPosition = 0;
 
   public static boolean kReverseFlag = false;
   public static boolean kTankFlag = false;
@@ -156,65 +139,70 @@ public class Drivetrain {
     kReverseFlag = false;
   }
 
-  //to eventually write correctly
-
-  public void moveWheelsTo(double left, double right) {
-      moveLeftWheelTo(left);
-      moveRightWheelTo(right);
+  /**
+   * Moves the robot's left and right tracks to obtain the desired left and right encoder positions.
+   * @param left The encoder position for the left track to drive to.
+   * @param right The encoder position for the right track to drive to.
+   */
+  public void moveTracksTo(double left, double right) {
+    moveTrackTo(left, getLeftPosition(), leftMotors);
+    moveTrackTo(right, getRightPosition(), rightMotors);
   }
 
-  public void moveLeftWheelTo(double target) {
-      double diff = target - getLeftPosition(); 
-      double sign = Math.signum(diff);
-      double absDiff = Math.abs(diff);
-      double minDiff = 0.5;
-      double scaleDiff = 5;
-      double adjusted = scaleDiff - minDiff;
-      double lowest = 0.2;
-      double temp = 1;
-      if (absDiff < minDiff) {
-          leftMotors.stopMotor();
-      } else {
-          if (absDiff < scaleDiff) {
-              temp = map(absDiff, minDiff, adjusted, lowest, 1);
-          }
-          if (sign == -1) {
-              leftMotors.set(-0.2*temp);
-          } else if (sign == 1) {
-              leftMotors.set(0.2*temp);
-          } else {
-              leftMotors.stopMotor();
-          }
-      }
-  }
-
-  public void moveRightWheelTo(double target) {
-      double diff = target - getRightPosition();
-      double sign = Math.signum(diff);
-      double absDiff = Math.abs(diff);
-      double minDiff = 0.5;
-      double scaleDiff = 5;
-      double adjusted = scaleDiff - minDiff;
-      double lowest = 0.2;
-      double temp = 1;
-      if (absDiff < minDiff) {
-          rightMotors.stopMotor();
-      } else {
-          if (absDiff < scaleDiff) {
-              temp = map(absDiff, minDiff, adjusted, lowest, 1);
-          }
-          if (sign == -1) {
-              rightMotors.set(-0.2*temp);
-          } else if (sign == 1) {
-              rightMotors.set(0.2*temp);
-          } else {
-              rightMotors.stopMotor();
-          }
-      }
-  }
-
+  /**
+   * A method that scales a double from range [a,b] to range [c,d].
+   * @param x The double to be scaled.
+   * @param a The lower bound of the first range.
+   * @param b The upper bound of the first range.
+   * @param c The lower bound of the second range.
+   * @param d The upper bound of the second range.
+   * @return The input double mapped onto the range [c,d].
+   */
   public double map(double x, double a, double b, double c, double d) {
-      return (x-a)/(b-a)*(d-c)+c; // (absDiff - minDiff)/(adjusted - minDiff)*(1 - lowest)+ lowest -- limiter
+    return (x-a)/(b-a)*(d-c)+c;
+  }
+
+  /**
+   * A method that returns a scaled speed for the tracks when automatically targetting an encoder position.
+   * This is used so as to not overshoot the desired encoder position as the tracks slow down as they nears their targets.
+   * @param difference The difference in the target encoder position and the track's current encoder position.
+   * @return A scaled speed that is to be passed onto the track's motors.
+   */
+  public double scaleTempSpeed(double difference) {
+    double scaled = map(Math.abs(difference), minimumEncoderDifference, beginScalingDifference-minimumEncoderDifference, minimumCommand, maximumCommand);
+    return Math.copySign(scaled, Math.signum(difference));
+  }
+
+  /**
+   * A method for moving a track to a desired encoder position.
+   * @param target The target encoder position to move the track to.
+   * @param currPos The current encoder position of the track to be moved.
+   * @param motors The group of motors that make up the track, either the left track motors or the right track motors.
+   */
+  public void moveTrackTo(double target, double currPos, MotorControllerGroup motors) {
+    double diff = target - currPos;
+    double abs = Math.abs(diff);
+    if (abs < minimumEncoderDifference) {
+      motors.stopMotor();
+    } else {
+      if (diff != 0) motors.set((abs < beginScalingDifference) ? scaleTempSpeed(diff) : Math.signum(diff));
+      else motors.stopMotor();
+    }
+  }
+
+  /** Saves the current robot drive motor encoder positions to later be used when maintaining the robot's position. */
+  public void saveCurrentRobotPosition() {
+    savedLeftPosition = getLeftPosition();
+    savedRightPosition = getRightPosition();
+  }
+
+  /**
+   * Method that, when called, will attempt to keep the robot at the saved drive motor encoder positions.
+   * This is useful when balancing as the {@link IdleMode} of the drive encoders, when set to kBrake,
+   * is not strong enough to keep the robot stationary should the balancing station be tilted.
+   */
+  public void maintainRobotPosition() {
+    moveTracksTo(getLeftPosition(), getRightPosition());
   }
 
   /** Wrapper method to call stopMotor on the internal {@link DifferentialDrive} object. */
