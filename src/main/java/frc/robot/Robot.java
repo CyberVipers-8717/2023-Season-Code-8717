@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
@@ -23,8 +24,19 @@ public class Robot extends TimedRobot {
 
   public Timer autoTimer = new Timer();
 
+  private static final String kDefaultAuto = "score high cube";
+  private static final String kAutoOne = "score high cube and balance";
+  private static final String kAutoTwo = "score high cube and taxi";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    m_chooser.setDefaultOption("Score high cube", kDefaultAuto);
+    m_chooser.addOption("Score high cube and try to balance", kAutoOne);
+    m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
+    SmartDashboard.putData(m_chooser);
+  }
 
   @Override
   public void robotPeriodic() {
@@ -42,8 +54,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    m_autoSelected = m_chooser.getSelected();
+
     driveTrain.zeroDriveEncoders();
+    elevator.zeroEncoders();
     Elevator.targetingCube = true;
+
     autoTimer.reset();
     autoTimer.start();
   }
@@ -51,19 +67,54 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     driveTrain.diffDrive.feed();
-    if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-      elevator.handlePOV(0);
-    } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-      hand.open();
-    }
-    if (autoTimer.get() > 2.6) elevator.handlePOV(270);
 
-    // if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-    //   driveTrain.moveTracksTo(50, 50);
-    // }
+    switch (m_autoSelected) {
+      case kDefaultAuto:
+        // score high cube code
+        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
+          elevator.handlePOV(0);
+        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
+          hand.open();
+        }
+        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
+        // end of score high cube code
+        break;
+      case kAutoOne:
+        // score high cube code
+        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
+          elevator.handlePOV(0);
+        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
+          hand.open();
+        }
+        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
+        // end of score high cube code
 
-    if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-      driveTrain.moveTracksTo(41, 41);
+        // balance code
+        if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
+          driveTrain.moveTracksTo(41, 41);
+        }
+        // end of balance code
+        break;
+      case kAutoTwo:
+        // score high cube code
+        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
+          elevator.handlePOV(0);
+        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
+          hand.open();
+        }
+        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
+        // end of score high cube code
+
+        // taxi code
+        if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
+          driveTrain.moveTracksTo(50, 50);
+        }
+        // end of taxi code
+        break;
+      default:
+        driveTrain.stopMotor();
+        elevator.stopMotor();
+        break;
     }
   }
 
@@ -201,14 +252,26 @@ public class Robot extends TimedRobot {
   }
 
   /**
-   * Moves a motor to a desired encoder position.
+   * Moves the specified motor to the target encoder position.
    * @param target The target encoder position to move the motor to.
    * @param currPos The current encoder position of the motor.
    * @param motor The motor that will be moved.
+   * @param minimumDifference The minium difference in encoder positions that the motor will start running at.
    * @param maximumSpeed The maximum speed to run the motor at.
+   * @param whenToScale The difference at which the motor will begin to scale its speed.
    */
   public static void moveMotorTo(double target, double currPos, MotorController motor, double minimumDifference, double maximumSpeed, double whenToScale) {
     double diff = target - currPos;
     motor.set(scaleTempCommand(diff, minimumDifference, whenToScale, 0.2, maximumSpeed));
+  }
+
+  /**
+   * @param target The target encoder position of the motor.
+   * @param currPos The current encodor position of the motor.
+   * @param minimumDifference The minium difference in encoder positions that the motor will start running at.
+   * @return A boolean indicating if the motor encoder position is within a minumum difference of the target encoder position.
+   */
+  public static boolean motorAtTarget(double target, double currPos, double minimumDifference) {
+    return Math.abs(target - currPos) < minimumDifference;
   }
 }
