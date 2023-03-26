@@ -13,8 +13,7 @@ public class Drivetrain {
   private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
   private static final double minimumEncoderDifference = 0.5;
-  private static final double beginScalingDifference = 5;
-  private static final double minimumCommand = 0.2;
+  private static final double whenToScaleCommand = 5;
   private static final double maximumCommand = 0.75;
 
   public static double savedLeftPosition = 0;
@@ -145,49 +144,8 @@ public class Drivetrain {
    * @param right The encoder position for the right track to drive to.
    */
   public void moveTracksTo(double left, double right) {
-    moveTrackTo(left, getLeftPosition(), leftMotors);
-    moveTrackTo(right, getRightPosition(), rightMotors);
-  }
-
-  /**
-   * A method that scales a double from range [a,b] to range [c,d].
-   * @param x The double to be scaled.
-   * @param a The lower bound of the first range.
-   * @param b The upper bound of the first range.
-   * @param c The lower bound of the second range.
-   * @param d The upper bound of the second range.
-   * @return The input double mapped onto the range [c,d].
-   */
-  public double map(double x, double a, double b, double c, double d) {
-    return (x-a)/(b-a)*(d-c)+c;
-  }
-
-  /**
-   * A method that returns a scaled speed for the tracks when automatically targetting an encoder position.
-   * This is used so as to not overshoot the desired encoder position as the tracks slow down as they nears their targets.
-   * @param difference The difference in the target encoder position and the track's current encoder position.
-   * @return A scaled speed that is to be passed onto the track's motors.
-   */
-  public double scaleTempSpeed(double difference) {
-    double scaled = map(Math.abs(difference), minimumEncoderDifference, beginScalingDifference-minimumEncoderDifference, minimumCommand, maximumCommand);
-    return Math.copySign(scaled, Math.signum(difference));
-  }
-
-  /**
-   * A method for moving a track to a desired encoder position.
-   * @param target The target encoder position to move the track to.
-   * @param currPos The current encoder position of the track to be moved.
-   * @param motors The group of motors that make up the track, either the left track motors or the right track motors.
-   */
-  public void moveTrackTo(double target, double currPos, MotorControllerGroup motors) {
-    double diff = target - currPos;
-    double abs = Math.abs(diff);
-    if (abs < minimumEncoderDifference) {
-      motors.stopMotor();
-    } else {
-      if (diff != 0) motors.set((abs < beginScalingDifference) ? scaleTempSpeed(diff) : Math.signum(diff));
-      else motors.stopMotor();
-    }
+    Robot.moveMotorTo(left, getLeftPosition(), leftMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
+    Robot.moveMotorTo(right, getRightPosition(), rightMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
   }
 
   /** Saves the current robot drive motor encoder positions to later be used when maintaining the robot's position. */
@@ -202,7 +160,7 @@ public class Drivetrain {
    * is not strong enough to keep the robot stationary should the balancing station be tilted.
    */
   public void maintainRobotPosition() {
-    moveTracksTo(getLeftPosition(), getRightPosition());
+    moveTracksTo(savedLeftPosition, savedRightPosition);
   }
 
   /** Wrapper method to call stopMotor on the internal {@link DifferentialDrive} object. */
