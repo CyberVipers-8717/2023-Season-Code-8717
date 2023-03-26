@@ -1,51 +1,37 @@
-/*
- * Robot todo list
- * 
- * Refactor the code
- * 
- * Write autonomous code
- */
-
 package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
 public class Robot extends TimedRobot {
+  public static boolean usingController = false;
+
   public Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
   public Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
   public Joystick controller = new Joystick(ControllerConstants.USBindex);
-  public boolean usingController = false;
+
   public Drivetrain driveTrain = new Drivetrain();
   public Elevator elevator = new Elevator();
   public Lime limelight = new Lime();
-  public Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
-  public DoubleSolenoid handSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
-  public int maxPipelines = 3;
+  public Hand hand = new Hand();
+
   public Timer autoTimer = new Timer();
 
   @Override
-  public void robotInit() {
-    pcmCompressor.enableDigital();
-  }
+  public void robotInit() {}
 
   @Override
   public void robotPeriodic() {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
-    SmartDashboard.putBoolean("Using Controller", usingController);
     SmartDashboard.putBoolean("Using Joystick", !usingController);
-    SmartDashboard.putNumber("Elevator Average", elevator.getElevatorPosition());
-    SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition()); 
-    SmartDashboard.putNumber("Current", pcmCompressor.getCurrent());
+    SmartDashboard.putNumber("Elevator", elevator.getElevatorPosition());
+    SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition());
     SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
@@ -57,6 +43,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     driveTrain.zeroDriveEncoders();
+    Elevator.targetingCube = true;
     autoTimer.reset();
     autoTimer.start();
   }
@@ -65,11 +52,11 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     driveTrain.diffDrive.feed();
     if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-      elevator.dealWithPOV(0, true);
+      elevator.handlePOV(0);
     } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-      handSolenoid.set(Value.kForward);
+      hand.open();
     }
-    if (autoTimer.get() > 2.6) elevator.dealWithPOV(270, true);
+    if (autoTimer.get() > 2.6) elevator.handlePOV(270);
 
     // if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
     //   driveTrain.moveTracksTo(50, 50);
@@ -93,11 +80,8 @@ public class Robot extends TimedRobot {
     // default is joystick
     if (controller.getRawButtonPressed(ControllerConstants.toggleDriverControl)) usingController = usingController?false:true;
 
-    if (controller.getRawButtonPressed(12)) {
-      double currPipe = LimelightHelpers.getCurrentPipelineIndex("limelight");
-      if (currPipe == maxPipelines-1) LimelightHelpers.setPipelineIndex("limelight",0);
-      else LimelightHelpers.setPipelineIndex("limelight",(int)currPipe+1);
-    }
+    // limelight pipeline
+    if (controller.getRawButtonPressed(12)) Lime.incrementPipeline();
 
     // targetting object
     if (controller.getRawButtonPressed(ControllerConstants.targetCube)) Elevator.targetingCube = true;
@@ -163,14 +147,11 @@ public class Robot extends TimedRobot {
       } else {
         elevator.stopElevator();
       }
-    } else elevator.dealWithPOV(controller.getPOV(), Elevator.targetingCube);
+    } else elevator.handlePOV(controller.getPOV());
 
     // hand
-    if (controller.getRawButtonPressed(ControllerConstants.handOpen)) {
-      handSolenoid.set(Value.kForward);
-    } else if (controller.getRawButtonPressed(ControllerConstants.handClose)) {
-      handSolenoid.set(Value.kReverse);
-    }
+    if (controller.getRawButtonPressed(ControllerConstants.handOpen)) hand.open();
+    else if (controller.getRawButtonPressed(ControllerConstants.handClose)) hand.close();
   }
 
   @Override
@@ -198,4 +179,36 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  /**
+   * Calculates a scaled speed for a motor to run at in order to reach a desired encoder position.
+   * @param diff The difference in the target encoder position and the current encoder position.
+   * @param minDiff The minimum difference in encoder positions that the motor will begin to run at.
+   * @param scaleDiff The difference at which the motor will begin to scale its speed, this is used so as not to
+   * overshoot the desired encoder position since the motor will slow down the closer it gets to its target.
+   * @param minCommand The minimum command that will be returned from this method, a motor will not run when its
+   * command is extremely small.
+   * @param maxCommand The maximum command that will be returned from this method, a motor is supposed to only
+   * accept a value between -1 and 1.
+   * @return The scaled speed command for the motor to achieve its desired encoder position.
+   */
+  public static double scaleTempCommand(double diff, double minDiff, double scaleDiff, double minCommand, double maxCommand) {
+    double abs = Math.abs(diff);
+    if (abs < minDiff) return 0;
+    if (abs > scaleDiff) return Math.signum(diff);
+    double scaled = (Math.abs(diff)-minDiff)/(scaleDiff-2*minDiff)*(maxCommand-minCommand)+minCommand;
+    return Math.copySign(scaled, Math.signum(diff));
+  }
+
+  /**
+   * Moves a motor to a desired encoder position.
+   * @param target The target encoder position to move the motor to.
+   * @param currPos The current encoder position of the motor.
+   * @param motor The motor that will be moved.
+   * @param maximumSpeed The maximum speed to run the motor at.
+   */
+  public static void moveMotorTo(double target, double currPos, MotorController motor, double minimumDifference, double maximumSpeed, double whenToScale) {
+    double diff = target - currPos;
+    motor.set(scaleTempCommand(diff, minimumDifference, whenToScale, 0.2, maximumSpeed));
+  }
 }
