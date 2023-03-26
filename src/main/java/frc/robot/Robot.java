@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Controller", usingController);
     SmartDashboard.putBoolean("Using Joystick", !usingController);
-    SmartDashboard.putNumber("Elevator Average", elevator.getAveragePosition());
+    SmartDashboard.putNumber("Elevator Position", elevator.getElevatorPosition());
     SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition()); 
     SmartDashboard.putNumber("Current", pcmCompressor.getCurrent());
     SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
