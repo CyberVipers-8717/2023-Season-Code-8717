@@ -1,7 +1,7 @@
 package frc.robot;
 
 public class Constants {
-    public static final class ElevatorEncoderConstants {
+    public static final class ElevatorConstants {
         // E indicates elevator (arm extending and retracting)
         // P indicates pulley (arm rotation)
         // S indicates cube (Sqaure)
