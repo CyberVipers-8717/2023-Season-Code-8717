@@ -100,7 +100,7 @@ public class Elevator {
    * Rotates the arm to the specified encoder position.
    * @param target The encoder position that the pulley motor will run to match.
    */
-  public void rotateArmTo(double target) {
+  public void pulleyTo(double target) {
     Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
   }
 
@@ -108,50 +108,118 @@ public class Elevator {
    * Extends, or retracts, the elevator to the specified encoder position.
    * @param target The encoder position that the elevator motors will run to match.
    */
-  public void runArmTo(double target) {
+  public void elevatorTo(double target) {
     Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
   }
 
-    /**
-     * Runs the elevator and pulley to preset encoder positions for cones and cubes.
-     * @param pov The POV angle from the controller.
-     * @param targetingCube A boolean indicating if the current target is a cube, false indicates target is a cone.
-     */
+  /**
+   * Calculates if the pulley motor is at the target encoder position.
+   * @param target The encoder position that the pulley motor will run to match.
+   * @return A boolean indicating whether the pulley motor is at its target encoder position.
+   */
+  public boolean pulleyAtPosition(double target) {
+    return Robot.motorAtTarget(target, getPulleyPosition(), minimumPulleyDifference);
+  }
+
+  /**
+   * Calculates if the elevator motors are at the target encoder position.
+   * @param target The encoder position that the elevator motors will run to match.
+   * @return A boolean indicating whether the elevator motors are at the target encoder position.
+   */
+  public boolean elevatorAtPosition(double target) {
+    return Robot.motorAtTarget(target, getElevatorPosition(), minimumElevatorDifference);
+  }
+
+  /**
+   * Wrapper method that rotates the arm and runs the elevator to the specified encoder positions.
+   * @param targetPulley The encoder position that the pulley motor will run to.
+   * @param targetElevator The encoder position that the elevator motors will run to.
+   */
+  public void armTo(double targetPulley, double targetElevator) {
+    pulleyTo(targetPulley);
+    elevatorTo(targetElevator);
+  }
+
+  /**
+   * @param targetPulley The encoder position that the pulley motor will run to.
+   * @param targetElevator The encoder position that the elevator motors will run to.
+   * @return A boolean indicating if both the elevator and pulley motors are at the specified encoder positions.
+   */
+  public boolean armAtPositions(double targetPulley, double targetElevator) {
+    return pulleyAtPosition(targetPulley) && elevatorAtPosition(targetElevator);
+  }
+
+  /**
+   * @return A boolean indicating if both the elevator and pulley are at high grid.
+   */
+  public boolean armAtHigh() {
+    if (targetingCube) return armAtPositions(ElevatorConstants.highSP, ElevatorConstants.highSE);
+    else return armAtPositions(ElevatorConstants.highTP, ElevatorConstants.highTE);
+  }
+
+  /**
+   * @return A boolean indicating if both the elevator and pulley are at mid grid.
+   */
+  public boolean armAtMid() {
+    if (targetingCube) return armAtPositions(ElevatorConstants.midSP, ElevatorConstants.midSE);
+    else return armAtPositions(ElevatorConstants.midTP, ElevatorConstants.midTE);
+  }
+
+  /**
+   * @return A boolean indicating if both the elevator and pulley are at double player station.
+   */
+  public boolean armAtDouble() {
+    if (targetingCube) return armAtPositions(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
+    else return armAtPositions(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
+  }
+
+  /**
+   * @return A boolean indicating if both the elevator and pulley are at resting position.
+   */
+  public boolean armAtRest() {
+    return armAtPositions(ElevatorConstants.restP, ElevatorConstants.restE);
+  }
+
+  /**
+   * Runs the elevator and pulley to preset encoder positions for cones and cubes.
+   * @param pov The POV angle from the controller.
+   * @param targetingCube A boolean indicating if the current target is a cube, false indicates target is a cone.
+   */
   public void handlePOV(int pov) {
     switch (pov) {
       case 0: // up
         // high grid
         if (targetingCube) {
-          rotateArmTo(ElevatorConstants.highSP);
-          runArmTo(ElevatorConstants.highSE);
+          pulleyTo(ElevatorConstants.highSP);
+          elevatorTo(ElevatorConstants.highSE);
         } else {
-          rotateArmTo(ElevatorConstants.highTP);
-          runArmTo(ElevatorConstants.highTE);
+          pulleyTo(ElevatorConstants.highTP);
+          elevatorTo(ElevatorConstants.highTE);
         }
         break;
       case 90: // right
         // mid grid
         if (targetingCube) {
-          rotateArmTo(ElevatorConstants.midSP);
-          runArmTo(ElevatorConstants.midSE);
+          pulleyTo(ElevatorConstants.midSP);
+          elevatorTo(ElevatorConstants.midSE);
         } else {
-          rotateArmTo(ElevatorConstants.midTP);
-          runArmTo(ElevatorConstants.midTE);
+          pulleyTo(ElevatorConstants.midTP);
+          elevatorTo(ElevatorConstants.midTE);
         }
         break;
       case 180: // down
         // double player station
         if (targetingCube) {
-          rotateArmTo(ElevatorConstants.doubleSP);
-          runArmTo(ElevatorConstants.doubleSE);
+          pulleyTo(ElevatorConstants.doubleSP);
+          elevatorTo(ElevatorConstants.doubleSE);
         } else {
-          rotateArmTo(ElevatorConstants.doubleTP);
-          runArmTo(ElevatorConstants.doubleTE);
+          pulleyTo(ElevatorConstants.doubleTP);
+          elevatorTo(ElevatorConstants.doubleTE);
         }
         break;
       case 270: // left
-        rotateArmTo(ElevatorConstants.restP);
-        runArmTo(ElevatorConstants.restE);
+        pulleyTo(ElevatorConstants.restP);
+        elevatorTo(ElevatorConstants.restE);
         break;
       default:
         break;

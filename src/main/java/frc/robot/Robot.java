@@ -4,38 +4,25 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
 public class Robot extends TimedRobot {
   public static boolean usingController = false;
 
-  public Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
-  public Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
-  public Joystick controller = new Joystick(ControllerConstants.USBindex);
+  public final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
+  public final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
+  public final Joystick controller = new Joystick(ControllerConstants.USBindex);
 
-  public Drivetrain driveTrain = new Drivetrain();
-  public Elevator elevator = new Elevator();
-  public Lime limelight = new Lime();
-  public Hand hand = new Hand();
-
-  public Timer autoTimer = new Timer();
-
-  private static final String kDefaultAuto = "score high cube";
-  private static final String kAutoOne = "score high cube and balance";
-  private static final String kAutoTwo = "score high cube and taxi";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  public static final Drivetrain driveTrain = new Drivetrain();
+  public static final Elevator elevator = new Elevator();
+  public static final Lime limelight = new Lime();
+  public static final Hand hand = new Hand();
 
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Score high cube", kDefaultAuto);
-    m_chooser.addOption("Score high cube and try to balance", kAutoOne);
-    m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
-    SmartDashboard.putData(m_chooser);
+    hand.off();
   }
 
   @Override
@@ -54,68 +41,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-
-    driveTrain.zeroDriveEncoders();
-    elevator.zeroEncoders();
-    Elevator.targetingCube = true;
-
-    autoTimer.reset();
-    autoTimer.start();
+    Autonomous.init();
   }
 
   @Override
   public void autonomousPeriodic() {
-    driveTrain.diffDrive.feed();
-
-    switch (m_autoSelected) {
-      case kDefaultAuto:
-        // score high cube code
-        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-          elevator.handlePOV(0);
-        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-          hand.open();
-        }
-        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
-        // end of score high cube code
-        break;
-      case kAutoOne:
-        // score high cube code
-        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-          elevator.handlePOV(0);
-        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-          hand.open();
-        }
-        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
-        // end of score high cube code
-
-        // balance code
-        if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-          driveTrain.moveTracksTo(41, 41);
-        }
-        // end of balance code
-        break;
-      case kAutoTwo:
-        // score high cube code
-        if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-          elevator.handlePOV(0);
-        } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-          hand.open();
-        }
-        if (autoTimer.get() > 2.6) elevator.handlePOV(270);
-        // end of score high cube code
-
-        // taxi code
-        if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-          driveTrain.moveTracksTo(50, 50);
-        }
-        // end of taxi code
-        break;
-      default:
-        driveTrain.stopMotor();
-        elevator.stopMotor();
-        break;
-    }
+    Autonomous.periodic();
   }
 
   @Override
@@ -207,7 +138,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    Elevator.targetingCube = true;
     driveTrain.defaultFlags();
     driveTrain.stopMotor();
     elevator.stopMotor();

@@ -42,6 +42,11 @@ public class Drivetrain {
     setDriveIdle(IdleMode.kBrake);
   }
 
+  /** Feeds the motor safety objects of the drive motors. */
+  public void feed() {
+    diffDrive.feed();
+  }
+
   /**
    * @return The average position of the left drive motor encoders.
    */
@@ -146,6 +151,18 @@ public class Drivetrain {
   public void moveTracksTo(double left, double right) {
     Robot.moveMotorTo(left, getLeftPosition(), leftMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
     Robot.moveMotorTo(right, getRightPosition(), rightMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
+  }
+
+  private boolean leftTrackAtPosition(double target) {
+    return Robot.motorAtTarget(target, getLeftPosition(), minimumEncoderDifference);
+  }
+
+  private boolean rightTrackAtPosition(double target) {
+    return Robot.motorAtTarget(target, getRightPosition(), minimumEncoderDifference);
+  }
+
+  public boolean tracksAtPosition(double left, double right) {
+    return leftTrackAtPosition(left) && rightTrackAtPosition(right);
   }
 
   /** Saves the current robot drive motor encoder positions to later be used when maintaining the robot's position. */

@@ -16,6 +16,11 @@ public class Hand {
     pcmCompressor.enableDigital();
   }
 
+  /** Sets the solenoid to the off channel. */
+  public void off() {
+    solenoid.set(Value.kOff);
+  }
+
   /** Sets the solenoid to the open hand channel. */
   public void open() {
     solenoid.set(openChannel);
