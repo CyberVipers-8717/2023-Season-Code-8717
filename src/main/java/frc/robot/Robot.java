@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
-    SmartDashboard.putNumber("Current Pipeline", LimelightHelpers.getCurrentPipelineIndex("limelight"));
+    SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
     SmartDashboard.putNumber("Left Wheel", driveTrain.getLeftPosition());
     SmartDashboard.putNumber("Right Wheel", driveTrain.getRightPosition());
   }

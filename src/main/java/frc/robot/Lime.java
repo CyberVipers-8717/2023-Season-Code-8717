@@ -3,8 +3,17 @@ package frc.robot;
 import java.lang.Math;
 
 public class Lime {
+  public static final String[] pipelineNames = {"Reflective tape", "April tags", "Viewing"};
   public static final int maxPipelines = 3;
 
+  /**
+   * @return The name of the currently selected pipeline.
+   */
+  public static String getCurrentPipeline() {
+    return pipelineNames[(int)LimelightHelpers.getCurrentPipelineIndex("limelight")];
+  }
+
+  /** Cycles through the available piplines by incrementing the index. */
   public static void incrementPipeline() {
     double currPipe = LimelightHelpers.getCurrentPipelineIndex("limelight");
     if (++currPipe >= maxPipelines) currPipe = 0;
