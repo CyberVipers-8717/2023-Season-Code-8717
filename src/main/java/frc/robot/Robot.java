@@ -66,48 +66,34 @@ public class Robot extends TimedRobot {
     if (controller.getRawButtonPressed(12)) Lime.incrementPipeline();
 
     // targetting object
-    if (controller.getRawButtonPressed(ControllerConstants.targetCube)) Elevator.targetingCube = true;
-    if (controller.getRawButtonPressed(ControllerConstants.targetCone)) Elevator.targetingCube = false;
+    if (controller.getRawButtonPressed(ControllerConstants.toggleTarget)) Elevator.targetingCube = Elevator.targetingCube?false:true;
 
     // zero encoders
     if (controller.getRawButtonPressed(ControllerConstants.zeroEncoders)) {
       elevator.zeroEncoders();
       driveTrain.zeroDriveEncoders();
     }
-    
-    // controller drive code
-    if (usingController) {
-      // tank drive and reverse
-      driveTrain.defaultFlags();
-      // braking
-      if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleDriveIdle();
 
-      // drive code
-      double forward = controller.getRawAxis(ControllerConstants.arcadeForward);
-      double rotation = controller.getRawAxis(ControllerConstants.arcadeRotation);
+    // braking
+    if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
 
-      driveTrain.arcade(forward, rotation);
-    } else {  //joystick
-      // tank drive and reverse buttons
-      if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
-      // tank drive
-      if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-        double[] modifiedCommands = limelight.autoCenter();
-        driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
+    // tank flag
+    if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
+
+    // drive code
+    if (stickR.getRawButton(JoystickConstants.limelightMode)) {
+      double[] modifiedCommands = limelight.autoCenter();
+      driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
+    } else {
+      if (Drivetrain.kTankFlag) {
+        double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
+        double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
+        driveTrain.tank(left, right);
       } else {
-        if (Drivetrain.kTankFlag) {
-          double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
-          double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
-          driveTrain.tank(left, right);
-        } else { // arcade drive
-          double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
-          double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
-          driveTrain.arcade(forward, rotation);
-        }
+        double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
+        double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
+        driveTrain.arcade(forward, rotation);
       }
-
-      // braking
-      if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
     }
 
     // auto pulley and elevator
