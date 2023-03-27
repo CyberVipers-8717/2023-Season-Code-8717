@@ -183,7 +183,7 @@ public class Robot extends TimedRobot {
 
   /**
    * @param target The target encoder position of the motor.
-   * @param currPos The current encodor position of the motor.
+   * @param currPos The current encoder position of the motor.
    * @param minimumDifference The minium difference in encoder positions that the motor will start running at.
    * @return A boolean indicating if the motor encoder position is within a minumum difference of the target encoder position.
    */
