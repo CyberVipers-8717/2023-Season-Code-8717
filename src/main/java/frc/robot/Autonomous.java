@@ -5,33 +5,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Autonomous {
-  public static final Timer autoTimer = new Timer();
   private static final Timer delayTimer = new Timer();
 
   private static final SendableChooser<String> m_chooser = new SendableChooser<>();
   public static String m_autoSelected;
 
-  private static final double startDelay = 0.5;
-
   private static final String kDefaultAuto = "score high cube";
   private static final String kAutoOne = "score high cube and balance";
   private static final String kAutoTwo = "score high cube and taxi";
+  private static final String kAutoThree = "do nothing";
 
-  private static boolean openedHand = false;
-  //private static boolean closedHand = false;
-  private static boolean scoredHighCube = false;
-  //private static boolean scoredHighCone = false;
-  //private static boolean scoredMidCube = false;
-  //private static boolean scoredMidCone = false;
-  private static boolean taxied = false;
-  private static boolean balanced = false;
-  private static boolean savedPosition = false;
+  private static int currentStep = 0;
+  private static int superStep = 0;
 
   /** Creates a {@link SendableChooser} and puts it on the {@link SmartDashboard}. */
   public static void initChooser() {
     m_chooser.setDefaultOption("Score high cube", kDefaultAuto);
-    m_chooser.addOption("Score high cube and try to balance", kAutoOne);
+    m_chooser.addOption("Score high cube and balance", kAutoOne);
     m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
+    m_chooser.addOption("Do nothing :(", kAutoThree);
     SmartDashboard.putData(m_chooser);
   }
 
@@ -45,37 +37,30 @@ public class Autonomous {
 
     Robot.hand.close();
 
-    resetTimer();
-    startTimer();
+    restartDelayTimer();
   }
 
   /** Contains code that is run in autonomousPeriodic. */
   public static void periodic() {
     Robot.driveTrain.feed();
-    if (getTime() < startDelay) return;
     switch (m_autoSelected) {
       case kDefaultAuto:
-        scoreHighCube();
+        Elevator.targetingCube = true;
+        scoreHigh(0);
         break;
       case kAutoOne:
-        if (scoredHighCube) {
-          if (wasDelayed(0.5)) {
-            if (balanced) {
-              if (savedPosition) Robot.driveTrain.maintainRobotPosition();
-              else {
-                Robot.driveTrain.saveCurrentRobotPosition();
-                savedPosition = true;
-              }
-            } else balanceRobot();
-          }
-        } else scoreHighCube();
+        Elevator.targetingCube = true;
+        scoreHigh(0);
+        balanceRobot(1);
         break;
       case kAutoTwo:
-        if (scoredHighCube) {
-          if (wasDelayed(0.5)) {
-            if (!taxied) taxiRobot();
-          }
-        } else scoreHighCube();
+        Elevator.targetingCube = true;
+        scoreHigh(0);
+        taxiRobot(1);
+        break;
+      case kAutoThree:
+        Robot.driveTrain.stopMotor();
+        Robot.elevator.stopMotor();
         break;
       default:
         Robot.driveTrain.stopMotor();
@@ -85,53 +70,94 @@ public class Autonomous {
   }
 
   /** Scores a cube at the high grid position. */
-  public static void scoreHighCube() {
-    if (Robot.elevator.armAtHigh()) {
-      if (!openedHand) {
-        Robot.hand.open();
-        openedHand = true;
-        scoredHighCube = true;
-        restartDelayTimer();
+  public static void scoreHigh(int thisStep) {
+    if (superStep == thisStep) {
+      // move arm up
+      if (currentStep == 0 && timeElapsed(0.5)) {
+        if (!Robot.elevator.armAtHigh()) Robot.elevator.handlePOV(0);
+        else {
+          restartDelayTimer();
+          currentStep++;
+        }
       }
-    } else Robot.elevator.handlePOV(0);
+      // open hand
+      else if (currentStep == 1 && timeElapsed(0.5)) {
+        Robot.hand.open();
+        restartDelayTimer();
+        currentStep++;
+      }
+      // move arm down
+      else if (currentStep == 2 && timeElapsed(0.5)) {
+        if (!Robot.elevator.armAtRest()) Robot.elevator.handlePOV(270);
+        else {
+          restartDelayTimer();
+          currentStep++;
+        }
+      }
+      // close hand
+      else if (currentStep == 3 && timeElapsed(0.5)) {
+        Robot.hand.close();
+        restartDelayTimer();
+        currentStep = 0;
+        superStep++;
+      }
+      // done
+    }
   }
 
   /** Move the robot to balance on the charging station in a crude way. */
-  public static void balanceRobot() {
-    if (Robot.driveTrain.tracksAtPosition(41, 41)) {
-      if (!balanced) {
-        balanced = true;
+  public static void balanceRobot(int thisStep) {
+    if (superStep == thisStep) {
+      // move robot to balance
+      if (currentStep == 0 && timeElapsed(0.5)) {
+        if (!Robot.driveTrain.tracksAtPosition(41, 41)) Robot.driveTrain.moveTracksTo(41, 41);
+        else {
+          restartDelayTimer();
+          currentStep++;
+        }
       }
-    } else Robot.driveTrain.moveTracksTo(41, 41);
+      // save robot position
+      else if (currentStep == 1 && timeElapsed(0.5)) {
+        Robot.driveTrain.saveCurrentRobotPosition();
+        currentStep++;
+      }
+      // keep robot at saved position
+      if (currentStep == 2) {
+        Robot.driveTrain.maintainRobotPosition();
+      }
+      // done
+    }
   }
 
   /** Taxi the robot to outside the community zone. */
-  public static void taxiRobot() {
-    Robot.driveTrain.moveTracksTo(50, 50);
-  }
-
-  /**
-   * @return The current time from the autoTimer.
-   */
-  public static double getTime() {
-    return autoTimer.get();
-  }
-  
-  /** Resets the autoTimer. */
-  public static void resetTimer() {
-    autoTimer.reset();
-  }
-
-  /** Starts the autoTimer. */
-  public static void startTimer() {
-    autoTimer.start();
+  public static void taxiRobot(int thisStep) {
+    if (superStep == thisStep) {
+      // move robot outside of community
+      if (currentStep == 0 && timeElapsed(0.5)) {
+        if (!Robot.driveTrain.tracksAtPosition(50, 50)) Robot.driveTrain.moveTracksTo(50, 50);
+        else {
+          restartDelayTimer();
+          currentStep++;
+        }
+      }
+      // save robot position
+      else if (currentStep == 1 && timeElapsed(0.5)) {
+        Robot.driveTrain.saveCurrentRobotPosition();
+        currentStep++;
+      }
+      // keep robot at saved position
+      if (currentStep == 2) {
+        Robot.driveTrain.maintainRobotPosition();
+      }
+      // done
+    }
   }
 
   /**
    * @param delayedTime The time the delayTimer will be checked against.
    * @return A boolean indicating if the delayTimer has reached, or exceeded, the indicated delayedTime.
    */
-  private static boolean wasDelayed(double delayedTime) {
+  private static boolean timeElapsed(double delayedTime) {
     return delayTimer.get() >= delayedTime;
   }
 

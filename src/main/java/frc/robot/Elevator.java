@@ -20,7 +20,7 @@ public class Elevator {
   private static final double minimumPulleyDifference = 1;
   private static final double whenToScaleElevatorCommand = 15;
   private static final double whenToScalePulleyCommand = 25;
-  private static final double maximumElevatorCommand = 0.55;
+  private static final double maximumElevatorCommand = 0.85;
   private static final double maximumPulleyCommand = 0.85;
 
   private CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
@@ -75,7 +75,7 @@ public class Elevator {
 
   /** Retracts the elevator at the manual extension speed. */
   public void retract() {
-    runElevator(manualRetractScale);
+    runElevator(-manualRetractScale);
   }
 
   /**
@@ -93,7 +93,7 @@ public class Elevator {
 
   /** Rotates the arm up at the manual rotation up speed. */
   public void rotateUp() {
-    runPulley(manualRotateUpScale);
+    runPulley(-manualRotateUpScale);
   }
 
   /**

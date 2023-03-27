@@ -14,7 +14,7 @@ public class Drivetrain {
   private static final double tankScale = 0.8;
   private static final double minimumEncoderDifference = 0.5;
   private static final double whenToScaleCommand = 5;
-  private static final double maximumCommand = 0.75;
+  private static final double maximumCommand = 0.35;
 
   public static double savedLeftPosition = 0;
   public static double savedRightPosition = 0;
@@ -60,6 +60,7 @@ public class Drivetrain {
   public double getRightPosition() {
     return (encoderRB.getPosition() + encoderRF.getPosition())/2;
   }
+
 
   /** Sets every drive motor encoder position to 0. */
   public void zeroDriveEncoders() {

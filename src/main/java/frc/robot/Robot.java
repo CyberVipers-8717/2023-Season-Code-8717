@@ -22,6 +22,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    Autonomous.initChooser();
     hand.off();
   }
 
@@ -76,24 +77,31 @@ public class Robot extends TimedRobot {
 
     // braking
     if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
+    if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleDriveIdle();
 
     // tank flag
     if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
 
-    // drive code
-    if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-      double[] modifiedCommands = limelight.autoCenter();
-      driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
-    } else {
-      if (Drivetrain.kTankFlag) {
-        double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
-        double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
-        driveTrain.tank(left, right);
+    if (!usingController) {
+      // drive code
+      if (stickR.getRawButton(JoystickConstants.limelightMode)) {
+        double[] modifiedCommands = limelight.autoCenter();
+        driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
       } else {
-        double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
-        double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
-        driveTrain.arcade(forward, rotation);
+        if (Drivetrain.kTankFlag) {
+          double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
+          double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
+          driveTrain.tank(left, right);
+        } else {
+          double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
+          double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
+          driveTrain.arcade(forward, rotation);
+        }
       }
+    } else {
+      double forward = controller.getRawAxis(ControllerConstants.arcadeForward);
+      double steering = controller.getRawAxis(ControllerConstants.arcadeRotation);
+      driveTrain.arcade(forward, steering);
     }
 
     // auto pulley and elevator
@@ -162,7 +170,7 @@ public class Robot extends TimedRobot {
   public static double scaleTempCommand(double diff, double minDiff, double scaleDiff, double minCommand, double maxCommand) {
     double abs = Math.abs(diff);
     if (abs < minDiff) return 0;
-    if (abs > scaleDiff) return Math.signum(diff);
+    if (abs > scaleDiff) return Math.signum(diff)*maxCommand;
     double scaled = (Math.abs(diff)-minDiff)/(scaleDiff-2*minDiff)*(maxCommand-minCommand)+minCommand;
     return Math.copySign(scaled, Math.signum(diff));
   }
@@ -178,7 +186,7 @@ public class Robot extends TimedRobot {
    */
   public static void moveMotorTo(double target, double currPos, MotorController motor, double minimumDifference, double maximumSpeed, double whenToScale) {
     double diff = target - currPos;
-    motor.set(scaleTempCommand(diff, minimumDifference, whenToScale, 0.2, maximumSpeed));
+    motor.set(scaleTempCommand(diff, minimumDifference, whenToScale, 0.05, maximumSpeed));
   }
 
   /**
