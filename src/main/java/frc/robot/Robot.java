@@ -1,84 +1,52 @@
-/*
- * Robot todo list
- * 
- * Refactor the code
- * 
- * Write autonomous code
- */
-
 package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
 public class Robot extends TimedRobot {
-  public Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
-  public Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
-  public Joystick controller = new Joystick(ControllerConstants.USBindex);
-  public boolean usingController = false;
-  public boolean targetingCube = true;
-  public Drivetrain driveTrain = new Drivetrain();
-  public Elevator elevator = new Elevator();
-  public Lime limelight = new Lime();
-  public Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
-  public DoubleSolenoid handSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
-  public int maxPipelines = 3;
-  public Timer autoTimer = new Timer();
+  public static boolean usingController = false;
+
+  public final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
+  public final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
+  public final Joystick controller = new Joystick(ControllerConstants.USBindex);
+
+  public static final Drivetrain driveTrain = new Drivetrain();
+  public static final Elevator elevator = new Elevator();
+  public static final Lime limelight = new Lime();
+  public static final Hand hand = new Hand();
 
   @Override
   public void robotInit() {
-    pcmCompressor.enableDigital();
+    hand.off();
   }
 
   @Override
   public void robotPeriodic() {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
-    SmartDashboard.putBoolean("Using Controller", usingController);
     SmartDashboard.putBoolean("Using Joystick", !usingController);
-    SmartDashboard.putNumber("Elevator Average", elevator.getAveragePosition());
-    SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition()); 
-    SmartDashboard.putNumber("Current", pcmCompressor.getCurrent());
+    SmartDashboard.putNumber("Elevator", elevator.getElevatorPosition());
+    SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition());
     SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
-    SmartDashboard.putBoolean("Targeting Cube", targetingCube);
-    SmartDashboard.putBoolean("Targeting Cone", !targetingCube);
-    SmartDashboard.putNumber("Current Pipeline", LimelightHelpers.getCurrentPipelineIndex("limelight"));
+    SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
+    SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
+    SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
     SmartDashboard.putNumber("Left Wheel", driveTrain.getLeftPosition());
     SmartDashboard.putNumber("Right Wheel", driveTrain.getRightPosition());
   }
 
   @Override
   public void autonomousInit() {
-    driveTrain.zeroDriveEncoders();
-    autoTimer.reset();
-    autoTimer.start();
+    Autonomous.init();
   }
 
   @Override
   public void autonomousPeriodic() {
-    driveTrain.diffDrive.feed();
-    if (autoTimer.get() < 2.3 && autoTimer.get() > 0.1) {
-      elevator.dealWithPOV(0, true);
-    } else if (autoTimer.get() > 2 && autoTimer.get() < 3) {
-      handSolenoid.set(Value.kForward);
-    }
-    if (autoTimer.get() > 2.6) elevator.dealWithPOV(270, true);
-
-    // if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-    //   driveTrain.moveWheelsTo(50, 50);
-    // }
-
-    if (autoTimer.get() > 2.6 && autoTimer.get() < 9) {
-      driveTrain.moveWheelsTo(41, 41);
-    }
+    Autonomous.periodic();
   }
 
   @Override
@@ -94,98 +62,77 @@ public class Robot extends TimedRobot {
     // default is joystick
     if (controller.getRawButtonPressed(ControllerConstants.toggleDriverControl)) usingController = usingController?false:true;
 
-    if (controller.getRawButtonPressed(12)) {
-      double currPipe = LimelightHelpers.getCurrentPipelineIndex("limelight");
-      if (currPipe == maxPipelines-1) LimelightHelpers.setPipelineIndex("limelight",0);
-      else LimelightHelpers.setPipelineIndex("limelight",(int)currPipe+1);
-    }
+    // limelight pipeline
+    if (controller.getRawButtonPressed(12)) Lime.incrementPipeline();
 
     // targetting object
-    if (controller.getRawButtonPressed(ControllerConstants.targetCube)) targetingCube = true;
-    if (controller.getRawButtonPressed(ControllerConstants.targetCone)) targetingCube = false;
+    if (controller.getRawButtonPressed(ControllerConstants.toggleTarget)) Elevator.targetingCube = Elevator.targetingCube?false:true;
 
     // zero encoders
     if (controller.getRawButtonPressed(ControllerConstants.zeroEncoders)) {
       elevator.zeroEncoders();
       driveTrain.zeroDriveEncoders();
     }
-    
-    // controller drive code
-    if (usingController) {
-      // tank drive and reverse
-      driveTrain.defaultFlags();
-      // braking
-      if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleDriveIdle();
 
-      // drive code
-      double forward = controller.getRawAxis(ControllerConstants.arcadeForward);
-      double rotation = controller.getRawAxis(ControllerConstants.arcadeRotation);
+    // braking
+    if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
 
-      driveTrain.arcade(forward, rotation);
-    } else {  //joystick
-      // tank drive and reverse buttons
-      if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
-      // tank drive
-      if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-        double[] modifiedCommands = limelight.autoCenter();
-        driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
+    // tank flag
+    if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
+
+    // drive code
+    if (stickR.getRawButton(JoystickConstants.limelightMode)) {
+      double[] modifiedCommands = limelight.autoCenter();
+      driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
+    } else {
+      if (Drivetrain.kTankFlag) {
+        double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
+        double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
+        driveTrain.tank(left, right);
       } else {
-        if (Drivetrain.kTankFlag) {
-          double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
-          double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
-          driveTrain.tank(left, right);
-        } else { // arcade drive
-          double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
-          double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
-          driveTrain.arcade(forward, rotation);
-        }
+        double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
+        double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
+        driveTrain.arcade(forward, rotation);
       }
-
-      // braking
-      if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
     }
 
     // auto pulley and elevator
     if (controller.getPOV()==-1) {
       // manual pulley
       if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
-        elevator.rotateArmDown(0.4);
+        elevator.rotateDown();
       } else if (controller.getRawButton(ControllerConstants.rotateArmUpIndex)) {
-        elevator.rotateArmUp(0.8);
+        elevator.rotateUp();
       } else {
         elevator.stopPulley();
       }
 
       // manual elevator
       if (controller.getRawButton(ControllerConstants.elevatorExtend)) {
-        elevator.extendArm(0.35);
+        elevator.extend();
       } else if (controller.getRawButton(ControllerConstants.elevatorRetract)) {
-        elevator.retractArm(0.35);
+        elevator.retract();
       } else {
         elevator.stopElevator();
       }
-    } else elevator.dealWithPOV(controller.getPOV(), targetingCube);
+    } else elevator.handlePOV(controller.getPOV());
 
     // hand
-    if (controller.getRawButtonPressed(ControllerConstants.handOpen)) {
-      handSolenoid.set(Value.kForward);
-    } else if (controller.getRawButtonPressed(ControllerConstants.handClose)) {
-      handSolenoid.set(Value.kReverse);
-    }
+    if (controller.getRawButtonPressed(ControllerConstants.handOpen)) hand.open();
+    else if (controller.getRawButtonPressed(ControllerConstants.handClose)) hand.close();
   }
 
   @Override
   public void disabledInit() {
-    targetingCube = true;
     driveTrain.defaultFlags();
     driveTrain.stopMotor();
-    elevator.stopAllMotors();
+    elevator.stopMotor();
   }
 
   @Override
   public void disabledPeriodic() {
     driveTrain.stopMotor();
-    elevator.stopAllMotors();
+    elevator.stopMotor();
   }
 
   @Override
@@ -199,4 +146,48 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  /**
+   * Calculates a scaled speed for a motor to run at in order to reach a desired encoder position.
+   * @param diff The difference in the target encoder position and the current encoder position.
+   * @param minDiff The minimum difference in encoder positions that the motor will begin to run at.
+   * @param scaleDiff The difference at which the motor will begin to scale its speed, this is used so as not to
+   * overshoot the desired encoder position since the motor will slow down the closer it gets to its target.
+   * @param minCommand The minimum command that will be returned from this method, a motor will not run when its
+   * command is extremely small.
+   * @param maxCommand The maximum command that will be returned from this method, a motor is supposed to only
+   * accept a value between -1 and 1.
+   * @return The scaled speed command for the motor to achieve its desired encoder position.
+   */
+  public static double scaleTempCommand(double diff, double minDiff, double scaleDiff, double minCommand, double maxCommand) {
+    double abs = Math.abs(diff);
+    if (abs < minDiff) return 0;
+    if (abs > scaleDiff) return Math.signum(diff);
+    double scaled = (Math.abs(diff)-minDiff)/(scaleDiff-2*minDiff)*(maxCommand-minCommand)+minCommand;
+    return Math.copySign(scaled, Math.signum(diff));
+  }
+
+  /**
+   * Moves the specified motor to the target encoder position.
+   * @param target The target encoder position to move the motor to.
+   * @param currPos The current encoder position of the motor.
+   * @param motor The motor that will be moved.
+   * @param minimumDifference The minium difference in encoder positions that the motor will start running at.
+   * @param maximumSpeed The maximum speed to run the motor at.
+   * @param whenToScale The difference at which the motor will begin to scale its speed.
+   */
+  public static void moveMotorTo(double target, double currPos, MotorController motor, double minimumDifference, double maximumSpeed, double whenToScale) {
+    double diff = target - currPos;
+    motor.set(scaleTempCommand(diff, minimumDifference, whenToScale, 0.2, maximumSpeed));
+  }
+
+  /**
+   * @param target The target encoder position of the motor.
+   * @param currPos The current encodor position of the motor.
+   * @param minimumDifference The minium difference in encoder positions that the motor will start running at.
+   * @return A boolean indicating if the motor encoder position is within a minumum difference of the target encoder position.
+   */
+  public static boolean motorAtTarget(double target, double currPos, double minimumDifference) {
+    return Math.abs(target - currPos) < minimumDifference;
+  }
 }

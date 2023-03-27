@@ -1,7 +1,7 @@
 package frc.robot;
 
 public class Constants {
-    public static final class ElevatorEncoderConstants {
+    public static final class ElevatorConstants {
         // E indicates elevator (arm extending and retracting)
         // P indicates pulley (arm rotation)
         // S indicates cube (Sqaure)
@@ -63,9 +63,8 @@ public class Constants {
         // open and close hand
         public static final int handOpen = 7;
         public static final int handClose = 8;
-        // set which object to target, cone or cube
-        public static final int targetCone = 5;
-        public static final int targetCube = 6;
+        // toggle which object to target, cone or cube
+        public static final int toggleTarget = 6;
         // Limelight auto centering 
         public static final int limelightToggle = 12;
         // zero encoder positions
