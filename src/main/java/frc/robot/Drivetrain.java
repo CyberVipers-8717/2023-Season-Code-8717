@@ -8,34 +8,16 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-/*
- * Structure of Drivetrain class
- * variable declarations
- * constructor
- * encoders
- *    get left average
- *    get right average
- *    zero positions
- * arcade
- * tank
- * driveIdle
- *    set
- *    get
- *    toggle
- * toggle tankFlag
- * toggle reverseFlag
- * default settings
- *    tankFlag = false
- *    reverseFlag = false
- * special auto stuff
- *    move wheels to specific encoder positions
- * stopMotors
- */
-
 public class Drivetrain {
   private static final double arcadeForwardScale = 0.95;
   private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
+  private static final double minimumEncoderDifference = 0.5;
+  private static final double whenToScaleCommand = 5;
+  private static final double maximumCommand = 0.35;
+
+  public static double savedLeftPosition = 0;
+  public static double savedRightPosition = 0;
 
   public static boolean kReverseFlag = false;
   public static boolean kTankFlag = false;
@@ -60,6 +42,11 @@ public class Drivetrain {
     setDriveIdle(IdleMode.kBrake);
   }
 
+  /** Feeds the motor safety objects of the drive motors. */
+  public void feed() {
+    diffDrive.feed();
+  }
+
   /**
    * @return The average position of the left drive motor encoders.
    */
@@ -73,6 +60,7 @@ public class Drivetrain {
   public double getRightPosition() {
     return (encoderRB.getPosition() + encoderRF.getPosition())/2;
   }
+
 
   /** Sets every drive motor encoder position to 0. */
   public void zeroDriveEncoders() {
@@ -156,65 +144,41 @@ public class Drivetrain {
     kReverseFlag = false;
   }
 
-  //to eventually write correctly
-
-  public void moveWheelsTo(double left, double right) {
-      moveLeftWheelTo(left);
-      moveRightWheelTo(right);
+  /**
+   * Moves the robot's left and right tracks to obtain the desired left and right encoder positions.
+   * @param left The encoder position for the left track to drive to.
+   * @param right The encoder position for the right track to drive to.
+   */
+  public void moveTracksTo(double left, double right) {
+    Robot.moveMotorTo(left, getLeftPosition(), leftMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
+    Robot.moveMotorTo(right, getRightPosition(), rightMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
   }
 
-  public void moveLeftWheelTo(double target) {
-      double diff = target - getLeftPosition(); 
-      double sign = Math.signum(diff);
-      double absDiff = Math.abs(diff);
-      double minDiff = 0.5;
-      double scaleDiff = 5;
-      double adjusted = scaleDiff - minDiff;
-      double lowest = 0.2;
-      double temp = 1;
-      if (absDiff < minDiff) {
-          leftMotors.stopMotor();
-      } else {
-          if (absDiff < scaleDiff) {
-              temp = map(absDiff, minDiff, adjusted, lowest, 1);
-          }
-          if (sign == -1) {
-              leftMotors.set(-0.2*temp);
-          } else if (sign == 1) {
-              leftMotors.set(0.2*temp);
-          } else {
-              leftMotors.stopMotor();
-          }
-      }
+  private boolean leftTrackAtPosition(double target) {
+    return Robot.motorAtTarget(target, getLeftPosition(), minimumEncoderDifference);
   }
 
-  public void moveRightWheelTo(double target) {
-      double diff = target - getRightPosition();
-      double sign = Math.signum(diff);
-      double absDiff = Math.abs(diff);
-      double minDiff = 0.5;
-      double scaleDiff = 5;
-      double adjusted = scaleDiff - minDiff;
-      double lowest = 0.2;
-      double temp = 1;
-      if (absDiff < minDiff) {
-          rightMotors.stopMotor();
-      } else {
-          if (absDiff < scaleDiff) {
-              temp = map(absDiff, minDiff, adjusted, lowest, 1);
-          }
-          if (sign == -1) {
-              rightMotors.set(-0.2*temp);
-          } else if (sign == 1) {
-              rightMotors.set(0.2*temp);
-          } else {
-              rightMotors.stopMotor();
-          }
-      }
+  private boolean rightTrackAtPosition(double target) {
+    return Robot.motorAtTarget(target, getRightPosition(), minimumEncoderDifference);
   }
 
-  public double map(double x, double a, double b, double c, double d) {
-      return (x-a)/(b-a)*(d-c)+c; // (absDiff - minDiff)/(adjusted - minDiff)*(1 - lowest)+ lowest -- limiter
+  public boolean tracksAtPosition(double left, double right) {
+    return leftTrackAtPosition(left) && rightTrackAtPosition(right);
+  }
+
+  /** Saves the current robot drive motor encoder positions to later be used when maintaining the robot's position. */
+  public void saveCurrentRobotPosition() {
+    savedLeftPosition = getLeftPosition();
+    savedRightPosition = getRightPosition();
+  }
+
+  /**
+   * Method that, when called, will attempt to keep the robot at the saved drive motor encoder positions.
+   * This is useful when balancing as the {@link IdleMode} of the drive encoders, when set to kBrake,
+   * is not strong enough to keep the robot stationary should the balancing station be tilted.
+   */
+  public void maintainRobotPosition() {
+    moveTracksTo(savedLeftPosition, savedRightPosition);
   }
 
   /** Wrapper method to call stopMotor on the internal {@link DifferentialDrive} object. */
