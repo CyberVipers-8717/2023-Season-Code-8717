@@ -52,6 +52,7 @@ public class Autonomous {
   /** Contains code that is run in autonomousPeriodic. */
   public static void periodic() {
     Robot.driveTrain.feed();
+    if (getTime() < startDelay) return;
     switch (m_autoSelected) {
       case kDefaultAuto:
         scoreHighCube();
@@ -85,34 +86,28 @@ public class Autonomous {
 
   /** Scores a cube at the high grid position. */
   public static void scoreHighCube() {
-    if (getTime() > startDelay) {
-      if (Robot.elevator.armAtHigh()) {
-        if (!openedHand) {
-          Robot.hand.open();
-          openedHand = true;
-          scoredHighCube = true;
-          restartDelayTimer();
-        }
-      } else Robot.elevator.handlePOV(0);
-    }
+    if (Robot.elevator.armAtHigh()) {
+      if (!openedHand) {
+        Robot.hand.open();
+        openedHand = true;
+        scoredHighCube = true;
+        restartDelayTimer();
+      }
+    } else Robot.elevator.handlePOV(0);
   }
 
   /** Move the robot to balance on the charging station in a crude way. */
   public static void balanceRobot() {
-    if (getTime() > startDelay) {
-      if (Robot.driveTrain.tracksAtPosition(41, 41)) {
-        if (!balanced) {
-          balanced = true;
-        }
-      } else Robot.driveTrain.moveTracksTo(41, 41);
-    }
+    if (Robot.driveTrain.tracksAtPosition(41, 41)) {
+      if (!balanced) {
+        balanced = true;
+      }
+    } else Robot.driveTrain.moveTracksTo(41, 41);
   }
 
   /** Taxi the robot to outside the community zone. */
   public static void taxiRobot() {
-    if (getTime() > startDelay) {
-      Robot.driveTrain.moveTracksTo(50, 50);
-    }
+    Robot.driveTrain.moveTracksTo(50, 50);
   }
 
   /**
