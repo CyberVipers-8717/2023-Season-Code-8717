@@ -61,28 +61,10 @@ public class Elevator {
   }
 
   /**
-   * Runs the elevator motors to either extend or retract the elevator.
-   * @param speed The speed that the elevator motors will bet set to.
-   */
-  public void runElevator(double speed) {
-    elevatorMotors.set(speed);
-  }
-
-  /** Extends the elevator at the manual extension speed. */
-  public void extend() {
-    runElevator(manualExtendScale);
-  }
-
-  /** Retracts the elevator at the manual extension speed. */
-  public void retract() {
-    runElevator(-manualRetractScale);
-  }
-
-  /**
    * Runs the pulley motor to either rotate the arm down or up.
    * @param speed The speed that the pulley motor will be set to.
    */
-  public void runPulley(double speed) {
+  private void runPulley(double speed) {
     pulleyMotor.set(speed);
   }
 
@@ -94,6 +76,24 @@ public class Elevator {
   /** Rotates the arm up at the manual rotation up speed. */
   public void rotateUp() {
     runPulley(-manualRotateUpScale);
+  }
+
+  /**
+   * Runs the elevator motors to either extend or retract the elevator.
+   * @param speed The speed that the elevator motors will bet set to.
+   */
+  private void runElevator(double speed) {
+    elevatorMotors.set(speed);
+  }
+
+  /** Extends the elevator at the manual extension speed. */
+  public void extend() {
+    runElevator(manualExtendScale);
+  }
+
+  /** Retracts the elevator at the manual extension speed. */
+  public void retract() {
+    runElevator(-manualRetractScale);
   }
 
   /**
@@ -145,39 +145,62 @@ public class Elevator {
    * @param targetElevator The encoder position that the elevator motors will run to.
    * @return A boolean indicating if both the elevator and pulley motors are at the specified encoder positions.
    */
-  public boolean armAtPositions(double targetPulley, double targetElevator) {
+  public boolean armAtPosition(double targetPulley, double targetElevator) {
     return pulleyAtPosition(targetPulley) && elevatorAtPosition(targetElevator);
+  }
+
+  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
+  public void armToHigh() {
+    if (targetingCube) armTo(ElevatorConstants.highSP, ElevatorConstants.highSE);
+    else armTo(ElevatorConstants.highTP, ElevatorConstants.highTE);
   }
 
   /**
    * @return A boolean indicating if both the elevator and pulley are at high grid.
    */
   public boolean armAtHigh() {
-    if (targetingCube) return armAtPositions(ElevatorConstants.highSP, ElevatorConstants.highSE);
-    else return armAtPositions(ElevatorConstants.highTP, ElevatorConstants.highTE);
+    if (targetingCube) return armAtPosition(ElevatorConstants.highSP, ElevatorConstants.highSE);
+    else return armAtPosition(ElevatorConstants.highTP, ElevatorConstants.highTE);
+  }
+
+  /** Wrapper method that rotates the arm and runs the elevator to the mid grid position. */
+  public void armToMid() {
+    if (targetingCube) armTo(ElevatorConstants.midSP, ElevatorConstants.midSE);
+    else armTo(ElevatorConstants.midTP, ElevatorConstants.midTE);
   }
 
   /**
    * @return A boolean indicating if both the elevator and pulley are at mid grid.
    */
   public boolean armAtMid() {
-    if (targetingCube) return armAtPositions(ElevatorConstants.midSP, ElevatorConstants.midSE);
-    else return armAtPositions(ElevatorConstants.midTP, ElevatorConstants.midTE);
+    if (targetingCube) return armAtPosition(ElevatorConstants.midSP, ElevatorConstants.midSE);
+    else return armAtPosition(ElevatorConstants.midTP, ElevatorConstants.midTE);
+  }
+
+  /** Wrapper method that rotates the arm and runs the elevator to the double player station. */
+  public void armToDouble() {
+    if (targetingCube) armTo(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
+    else armTo(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
   }
 
   /**
    * @return A boolean indicating if both the elevator and pulley are at double player station.
    */
   public boolean armAtDouble() {
-    if (targetingCube) return armAtPositions(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
-    else return armAtPositions(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
+    if (targetingCube) return armAtPosition(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
+    else return armAtPosition(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
+  }
+
+  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
+  public void armToRest() {
+    armTo(ElevatorConstants.restP, ElevatorConstants.restE);
   }
 
   /**
    * @return A boolean indicating if both the elevator and pulley are at resting position.
    */
   public boolean armAtRest() {
-    return armAtPositions(ElevatorConstants.restP, ElevatorConstants.restE);
+    return armAtPosition(ElevatorConstants.restP, ElevatorConstants.restE);
   }
 
   /**
@@ -188,40 +211,16 @@ public class Elevator {
   public void handlePOV(int pov) {
     switch (pov) {
       case 0: // up
-        // high grid
-        if (targetingCube) {
-          pulleyTo(ElevatorConstants.highSP);
-          elevatorTo(ElevatorConstants.highSE);
-        } else {
-          pulleyTo(ElevatorConstants.highTP);
-          elevatorTo(ElevatorConstants.highTE);
-        }
+        armToHigh();
         break;
       case 90: // right
-        // mid grid
-        if (targetingCube) {
-          pulleyTo(ElevatorConstants.midSP);
-          elevatorTo(ElevatorConstants.midSE);
-        } else {
-          pulleyTo(ElevatorConstants.midTP);
-          elevatorTo(ElevatorConstants.midTE);
-        }
+        armToMid();
         break;
       case 180: // down
-        // double player station
-        if (targetingCube) {
-          pulleyTo(ElevatorConstants.doubleSP);
-          elevatorTo(ElevatorConstants.doubleSE);
-        } else {
-          pulleyTo(ElevatorConstants.doubleTP);
-          elevatorTo(ElevatorConstants.doubleTE);
-        }
+        armToDouble();
         break;
       case 270: // left
-        pulleyTo(ElevatorConstants.restP);
-        elevatorTo(ElevatorConstants.restE);
-        break;
-      default:
+        armToRest();
         break;
     }
   }
