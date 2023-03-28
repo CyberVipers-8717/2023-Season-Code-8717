@@ -154,14 +154,30 @@ public class Drivetrain {
     Robot.moveMotorTo(right, getRightPosition(), rightMotors, minimumEncoderDifference, maximumCommand, whenToScaleCommand);
   }
 
+  /**
+   * Checks if the robot's left track is at the desired encoder position.
+   * @param target The encoder position the left track is checked against.
+   * @return A boolean indicating if the robot's left track is at the specified encoder position.
+   */
   private boolean leftTrackAtPosition(double target) {
     return Robot.motorAtTarget(target, getLeftPosition(), minimumEncoderDifference);
   }
 
+  /**
+   * Checks if the robot's right track is at the desired encoder position.
+   * @param target The encoder position the right track is checked against.
+   * @return A boolean indicating if the robot's right track is at the specified encoder position.
+   */
   private boolean rightTrackAtPosition(double target) {
     return Robot.motorAtTarget(target, getRightPosition(), minimumEncoderDifference);
   }
 
+  /**
+   * Checks if both the robot's left and right tracks are at the desired encoder positions.
+   * @param left The encoder position the left track is checked against.
+   * @param right The encoder position the right track is checked against.
+   * @return A boolean indicating if both the robot's left and right tracks are at the specified encoder positions.
+   */
   public boolean tracksAtPosition(double left, double right) {
     return leftTrackAtPosition(left) && rightTrackAtPosition(right);
   }
