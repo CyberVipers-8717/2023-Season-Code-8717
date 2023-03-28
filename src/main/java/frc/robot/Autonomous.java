@@ -74,7 +74,7 @@ public class Autonomous {
     if (superStep == thisStep) {
       // move arm up
       if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtHigh()) Robot.elevator.handlePOV(0);
+        if (!Robot.elevator.armAtHigh()) Robot.elevator.armToHigh();
         else {
           restartDelayTimer();
           currentStep++;
@@ -88,7 +88,7 @@ public class Autonomous {
       }
       // move arm down
       else if (currentStep == 2 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtRest()) Robot.elevator.handlePOV(270);
+        if (!Robot.elevator.armAtRest()) Robot.elevator.armToRest();
         else {
           restartDelayTimer();
           currentStep++;
