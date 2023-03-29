@@ -34,7 +34,7 @@ public class Drivetrain {
   private RelativeEncoder encoderLF = motorLF.getEncoder();
   private RelativeEncoder encoderRF = motorRF.getEncoder();
   private RelativeEncoder encoderRB = motorRB.getEncoder();
-  
+
   /** Construct a custom Drivetrain object. */
   public Drivetrain() {
     motorLB.setInverted(true);
