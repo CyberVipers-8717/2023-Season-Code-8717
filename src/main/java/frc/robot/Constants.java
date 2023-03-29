@@ -2,6 +2,17 @@ package frc.robot;
 
 public class Constants {
     public static final class ElevatorConstants {
+        public static final class SymbolicPresets {
+            public static final int _high = 0;
+            public static final int _medium = 1;
+            public static final int _double = 2;
+            public static final int _rest = 3;
+    
+            public static final int _up = 0;
+            public static final int _right = 90;
+            public static final int _down = 180;
+            public static final int _left = 270;
+        }
         // E indicates elevator (arm extending and retracting)
         // P indicates pulley (arm rotation)
         // S indicates cube (Sqaure)
@@ -26,6 +37,18 @@ public class Constants {
         public static final double midTE = 41;
         public static final double doubleTP = 39.7;
         public static final double doubleTE = 1;
+
+        public static final double manualRotateDownScale = 0.5;
+        public static final double manualRotateUpScale = 0.9;
+        public static final double manualExtendScale = 0.35;
+        public static final double manualRetractScale = 0.3;
+
+        public static final double minimumElevatorDifference = 0.5;
+        public static final double minimumPulleyDifference = 1;
+        public static final double whenToScaleElevatorCommand = 15;
+        public static final double whenToScalePulleyCommand = 25;
+        public static final double maximumElevatorCommand = 0.85;
+        public static final double maximumPulleyCommand = 0.85;
     }
     public static final class ControllerConstants {
         public static final int USBindex = 1;

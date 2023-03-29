@@ -7,21 +7,10 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator {
   public static boolean targetingCube = true;
-
-  private static final double manualRotateDownScale = 0.5;
-  private static final double manualRotateUpScale = 0.9;
-  private static final double manualExtendScale = 0.35;
-  private static final double manualRetractScale = 0.3;
-
-  private static final double minimumElevatorDifference = 0.5;
-  private static final double minimumPulleyDifference = 1;
-  private static final double whenToScaleElevatorCommand = 15;
-  private static final double whenToScalePulleyCommand = 25;
-  private static final double maximumElevatorCommand = 0.85;
-  private static final double maximumPulleyCommand = 0.85;
 
   private CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
   private CANSparkMax elevatorMotorR = new CANSparkMax(7, MotorType.kBrushless);
@@ -61,39 +50,29 @@ public class Elevator {
   }
 
   /**
-   * Runs the pulley motor to either rotate the arm down or up.
-   * @param speed The speed that the pulley motor will be set to.
-   */
-  private void runPulley(double speed) {
-    pulleyMotor.set(speed);
-  }
-
-  /** Rotates the arm down at the manual rotation down speed. */
-  public void rotateDown() {
-    runPulley(manualRotateDownScale);
-  }
-
-  /** Rotates the arm up at the manual rotation up speed. */
-  public void rotateUp() {
-    runPulley(-manualRotateUpScale);
-  }
-
-  /**
    * Runs the elevator motors to either extend or retract the elevator.
    * @param speed The speed that the elevator motors will bet set to.
    */
-  private void runElevator(double speed) {
+  public void runElevator(double speed) {
     elevatorMotors.set(speed);
   }
 
-  /** Extends the elevator at the manual extension speed. */
-  public void extend() {
-    runElevator(manualExtendScale);
+  /** Retracts or extends the elevator at the manual extension speed. */
+  public void extend(boolean isExtending) {
+    runElevator(isExtending ? ElevatorConstants.manualExtendScale : ElevatorConstants.manualRetractScale);
   }
 
-  /** Retracts the elevator at the manual extension speed. */
-  public void retract() {
-    runElevator(-manualRetractScale);
+  /**
+   * Runs the pulley motor to either rotate the arm down or up.
+   * @param speed The speed that the pulley motor will be set to.
+   */
+  public void runPulley(double speed) {
+    pulleyMotor.set(speed);
+  }
+
+  /** Rotates the arm up or down at the manual rotation down speed. */
+  public void rotateDown(boolean isDown) {
+    runPulley(isDown ? ElevatorConstants.manualRotateDownScale : ElevatorConstants.manualRotateUpScale);
   }
 
   /**
@@ -101,7 +80,8 @@ public class Elevator {
    * @param target The encoder position that the pulley motor will run to match.
    */
   public void pulleyTo(double target) {
-    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
+    RobotMethods.moveMotorTo(target, getPulleyPosition(), pulleyMotor,
+    ElevatorConstants.minimumPulleyDifference, ElevatorConstants.maximumPulleyCommand, ElevatorConstants.whenToScalePulleyCommand);
   }
 
   /**
@@ -109,7 +89,8 @@ public class Elevator {
    * @param target The encoder position that the elevator motors will run to match.
    */
   public void elevatorTo(double target) {
-    Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
+    RobotMethods.moveMotorTo(target, getElevatorPosition(), elevatorMotors,
+    ElevatorConstants.minimumElevatorDifference, ElevatorConstants.maximumElevatorCommand, ElevatorConstants.whenToScaleElevatorCommand);
   }
 
   /**
@@ -118,7 +99,7 @@ public class Elevator {
    * @return A boolean indicating whether the pulley motor is at its target encoder position.
    */
   public boolean pulleyAtPosition(double target) {
-    return Robot.motorAtTarget(target, getPulleyPosition(), minimumPulleyDifference);
+    return RobotMethods.motorAtTarget(target, getPulleyPosition(), ElevatorConstants.minimumPulleyDifference);
   }
 
   /**
@@ -127,7 +108,7 @@ public class Elevator {
    * @return A boolean indicating whether the elevator motors are at the target encoder position.
    */
   public boolean elevatorAtPosition(double target) {
-    return Robot.motorAtTarget(target, getElevatorPosition(), minimumElevatorDifference);
+    return RobotMethods.motorAtTarget(target, getElevatorPosition(), ElevatorConstants.minimumElevatorDifference);
   }
 
   /**
@@ -140,69 +121,46 @@ public class Elevator {
     elevatorTo(targetElevator);
   }
 
+  public void armAtPresetHelper(boolean atPresetHelper, double squarePulley,
+    double squareElevator, double targetPulley, double triangleElevator) {
+      if (targetingCube) atPresetHelper = armAtPositions(squarePulley, squareElevator);
+      else atPresetHelper = armAtPositions(targetPulley, triangleElevator);
+    }
+
+  public void handlePOVHelper(boolean targetingCube, double squarePulley,
+    double squareElevator, double targetPulley, double triangleElevator) {
+      pulleyTo(targetingCube ? squareElevator : triangleElevator);
+      pulleyTo(targetingCube ? squarePulley : targetPulley);
+    }
   /**
    * @param targetPulley The encoder position that the pulley motor will run to.
    * @param targetElevator The encoder position that the elevator motors will run to.
    * @return A boolean indicating if both the elevator and pulley motors are at the specified encoder positions.
    */
-  public boolean armAtPosition(double targetPulley, double targetElevator) {
+  public boolean armAtPositions(double targetPulley, double targetElevator) {
     return pulleyAtPosition(targetPulley) && elevatorAtPosition(targetElevator);
   }
 
-  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
-  public void armToHigh() {
-    if (targetingCube) armTo(ElevatorConstants.highSP, ElevatorConstants.highSE);
-    else armTo(ElevatorConstants.highTP, ElevatorConstants.highTE);
+  public boolean armAtPreset(int preset) {
+    boolean atPreset = false;
+    switch (preset) {
+      case SymbolicPresets._high:
+        armAtPresetHelper(atPreset, ElevatorConstants.highSP, ElevatorConstants.highSE, ElevatorConstants.highTP, ElevatorConstants.highTE);
+        break;
+      case SymbolicPresets._medium:
+        armAtPresetHelper(atPreset, ElevatorConstants.midSP, ElevatorConstants.midSE, ElevatorConstants.midTP, ElevatorConstants.midTE);
+        break;
+      case SymbolicPresets._double:
+        armAtPresetHelper(atPreset, ElevatorConstants.doubleSP, ElevatorConstants.doubleSE, ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
+        break;
+      case SymbolicPresets._rest:
+        armAtPresetHelper(atPreset, ElevatorConstants.restP, ElevatorConstants.restE, ElevatorConstants.restP, ElevatorConstants.restE);
+        break;
+      default: break;
+    }
+    return atPreset;
   }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at high grid.
-   */
-  public boolean armAtHigh() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.highSP, ElevatorConstants.highSE);
-    else return armAtPosition(ElevatorConstants.highTP, ElevatorConstants.highTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the mid grid position. */
-  public void armToMid() {
-    if (targetingCube) armTo(ElevatorConstants.midSP, ElevatorConstants.midSE);
-    else armTo(ElevatorConstants.midTP, ElevatorConstants.midTE);
-  }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at mid grid.
-   */
-  public boolean armAtMid() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.midSP, ElevatorConstants.midSE);
-    else return armAtPosition(ElevatorConstants.midTP, ElevatorConstants.midTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the double player station. */
-  public void armToDouble() {
-    if (targetingCube) armTo(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
-    else armTo(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
-  }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at double player station.
-   */
-  public boolean armAtDouble() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
-    else return armAtPosition(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
-  public void armToRest() {
-    armTo(ElevatorConstants.restP, ElevatorConstants.restE);
-  }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at resting position.
-   */
-  public boolean armAtRest() {
-    return armAtPosition(ElevatorConstants.restP, ElevatorConstants.restE);
-  }
-
+  
   /**
    * Runs the elevator and pulley to preset encoder positions for cones and cubes.
    * @param pov The POV angle from the controller.
@@ -210,17 +168,22 @@ public class Elevator {
    */
   public void handlePOV(int pov) {
     switch (pov) {
-      case 0: // up
-        armToHigh();
+      case SymbolicPresets._up: // 0
+        // high grid
+        handlePOVHelper(targetingCube, ElevatorConstants.highSP, ElevatorConstants.highSE, ElevatorConstants.highTP, ElevatorConstants.highTE);
         break;
-      case 90: // right
-        armToMid();
+      case SymbolicPresets._right: // 90
+        // mid grid
+        handlePOVHelper(targetingCube, ElevatorConstants.midSP, ElevatorConstants.midSE, ElevatorConstants.midTP, ElevatorConstants.midTE);
         break;
-      case 180: // down
-        armToDouble();
+      case SymbolicPresets._down: // 180
+        // double player station
+        handlePOVHelper(targetingCube, ElevatorConstants.doubleSP, ElevatorConstants.doubleSE, ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
         break;
-      case 270: // left
-        armToRest();
+      case SymbolicPresets._left: // 270
+        handlePOVHelper(targetingCube, ElevatorConstants.restP, ElevatorConstants.restE, ElevatorConstants.restP, ElevatorConstants.restE);
+        break;
+      default:
         break;
     }
   }

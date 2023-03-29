@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.ElevatorConstants.SymbolicPresets;
 
 public class Autonomous {
   private static final Timer delayTimer = new Timer();
@@ -74,7 +75,7 @@ public class Autonomous {
     if (superStep == thisStep) {
       // move arm up
       if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtHigh()) Robot.elevator.armToHigh();
+        if (!Robot.elevator.armAtPreset(SymbolicPresets._high)) Robot.elevator.handlePOV(0);
         else {
           restartDelayTimer();
           currentStep++;
@@ -88,7 +89,7 @@ public class Autonomous {
       }
       // move arm down
       else if (currentStep == 2 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtRest()) Robot.elevator.armToRest();
+        if (!Robot.elevator.armAtPreset(SymbolicPresets._rest)) Robot.elevator.handlePOV(270);
         else {
           restartDelayTimer();
           currentStep++;
