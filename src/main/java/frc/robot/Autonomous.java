@@ -24,7 +24,7 @@ public class Autonomous {
     m_chooser.addOption("Score high cube and balance", kAutoOne);
     m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
     m_chooser.addOption("Do nothing :(", kAutoThree);
-    SmartDashboard.putData(m_chooser);
+    SmartDashboard.putData("Auto Chooser", m_chooser);
   }
 
   /** Contains code that is run in autonomousInit. */
