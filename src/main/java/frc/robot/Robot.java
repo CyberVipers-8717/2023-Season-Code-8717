@@ -104,6 +104,10 @@ public class Robot extends TimedRobot {
       driveTrain.arcade(forward, steering);
     }
 
+    // maintain position
+    if (stickL.getRawButtonPressed(1)) driveTrain.saveCurrentRobotPosition();
+    if (stickL.getRawButton(1)) driveTrain.maintainRobotPosition();
+
     // auto pulley and elevator
     if (controller.getPOV()==-1) {
       // manual pulley
