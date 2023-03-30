@@ -219,6 +219,15 @@ public class Drivetrain {
     moveTracksTo(savedLeftPosition, savedRightPosition);
   }
 
+  /**
+   * Maintains the robot's position at the saved encoder positions.
+   * @param pressed A boolean indicating if the button to maintain the robot's position was pressed.
+   */
+  public static void maintainRobotPosition(boolean pressed) {
+    if (pressed) saveCurrentRobotPosition();
+    maintainRobotPosition();
+  }
+
   /** Wrapper method to call stopMotor on the internal {@link DifferentialDrive} object. */
   public static void stopMotor() {
     diffDrive.stopMotor();
