@@ -37,7 +37,7 @@ public class Drivetrain {
   private static RelativeEncoder encoderRF = motorRF.getEncoder();
   private static RelativeEncoder encoderRB = motorRB.getEncoder();
 
-  /** Construct a custom Drivetrain object. */
+  /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
     motorLB.setInverted(true);
     motorLF.setInverted(true);
@@ -119,6 +119,7 @@ public class Drivetrain {
     else tank(vals);
   }
 
+  /** Align the robot to the center of the target on the limelight. */
   public static void alignLimelight() {
     tank(Lime.autoCenter());
   }
