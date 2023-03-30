@@ -9,18 +9,27 @@ public class Controller {
     controller = new Joystick(port);
   }
 
+  /**
+   * @return A double array containing the forward speed and rotation speed from the controller's thumbsticks.
+   */
   public double[] getArcadeAxes() {
     double forward = getLeftX();
     double rotation = getRightY();
     return new double[] {forward, rotation};
   }
 
+  /**
+   * @return A double array containing the left and right track speed from the controller's thumbsticks.
+   */
   public double[] getTankAxes() {
     double left = getLeftX();
     double right = getRightX();
     return new double[] {left, right};
   }
 
+  /**
+   * @return A double array containing the first and second value required for arcade or tank drive, depending on the kTankFlag.
+   */
   public double[] getDriveAxes() {
     if (!Drivetrain.kTankFlag) return getArcadeAxes();
     return getTankAxes();
