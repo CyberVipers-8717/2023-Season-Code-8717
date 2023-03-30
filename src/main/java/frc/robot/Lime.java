@@ -28,7 +28,7 @@ public class Lime {
   // public static final double desiredDistance = 25.0; //adjust this 
   public static final double controlConstant = 0.1;
   public static final double minCommand = 0.15;
-  public static final double maxCommand = 0.55;
+  public static final double maxCommand = 0.7;
 
   public static boolean getIsTargetFound() {
     boolean targetCheck = LimelightHelpers.getTV("limelight");
