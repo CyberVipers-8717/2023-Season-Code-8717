@@ -3,8 +3,8 @@ package frc.robot;
 import java.lang.Math;
 
 public class Lime {
-  public static final String[] pipelineNames = {"Reflective tape", "April tags", "Viewing"};
-  public static final int maxPipelines = 3;
+  public static final String[] pipelineNames = {"Reflective tape", "April tags", "Viewing"}; // names to display on dashboard when switching streams
+  public static final int maxPipelines = 3; // the number of pipelines that are available to switch through on the limelight
 
   /**
    * @return The name of the currently selected pipeline.
@@ -35,6 +35,9 @@ public class Lime {
     return targetCheck;
   }  
 
+  /**
+   * @return A double array of the left and right command for tank drive in order to center the limelight target.
+   */
   public static double[] autoCenter() {
     double adjust = 0;
     double headingError = LimelightHelpers.getTX("limelight");
