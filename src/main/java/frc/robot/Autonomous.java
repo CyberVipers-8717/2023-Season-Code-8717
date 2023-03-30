@@ -15,8 +15,8 @@ public class Autonomous {
   private static final String kAutoTwo = "score high cube and taxi";
   private static final String kAutoThree = "do nothing";
 
-  private static int currentStep = 0;
-  private static int superStep = 0;
+  private static int currentStep = 0; // indicates current step in a set action like what part of scoring a high cube you are on
+  private static int superStep = 0; // indicates the current sequence like you are getting mobility after just doing the high cube sequence
 
   /** Creates a {@link SendableChooser} and puts it on the {@link SmartDashboard}. */
   public static void robotInit() {
