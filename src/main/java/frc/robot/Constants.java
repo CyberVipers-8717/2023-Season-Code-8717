@@ -28,47 +28,23 @@ public class Constants {
         public static final double doubleTE = 1;
     }
     public static final class ControllerConstants {
-        public static final int USBindex = 1;
-        /* buttons
-         * 1    X
-         * 2    A
-         * 3    B
-         * 4    Y
-         * 5    left bumper
-         * 6    right bumper
-         * 7    left trigger
-         * 8    right trigger
-         * 9    back
-         * 10   start
-         * 11   left joystick press
-         * 12   right joystick press
-         * axes (plural axis)
-         * 0    left stick left and right [-1, 1]
-         * 1    left stick up and down [-1, 1]
-         * 2    right stick left and right [-1, 1]
-         * 3    right stick up and down [-1, 1]
-         */
-        // arcade driving axes
-        public static final int arcadeForward = 1;
-        public static final int arcadeRotation = 2;
-        // elevator motions
-        public static final int elevatorExtend = 1;
-        public static final int elevatorRetract = 3;
-        public static final int rotateArmDownIndex = 4;
-        public static final int rotateArmUpIndex = 2;
-        // motor idle mode
-        public static final int brakingModeIndex = 9;
-        // toggle driving control between joysticks and controller
-        public static final int toggleDriverControl = 10;
-        // open and close hand
-        public static final int handOpen = 7;
-        public static final int handClose = 8;
-        // toggle which object to target, cone or cube
-        public static final int toggleTarget = 6;
-        // Limelight auto centering 
-        public static final int limelightToggle = 12;
-        // zero encoder positions
-        public static final int zeroEncoders = 11;
+        public static final int USB = 0;
+        public static final int X = 1;
+        public static final int A = 2;
+        public static final int B = 3;
+        public static final int Y = 4;
+        public static final int leftBumper = 5;
+        public static final int rightBumper = 6;
+        public static final int leftTrigger = 7;
+        public static final int rightTrigger = 8;
+        public static final int back = 9;
+        public static final int start = 10;
+        public static final int leftThumb = 11;
+        public static final int rightThumb = 12;
+        public static final int leftY = 0; // left thumb left and right [-1, 1]
+        public static final int leftX = 1; // left thumb up and down [-1, 1]
+        public static final int rightY = 2; // right thumb left and right [-1, 1]
+        public static final int rightX = 3; // right thumb up and down [-1, 1]
     }
     public static final class JoystickConstants {
         public static final int arcadeForwardAxis = 1;
