@@ -11,7 +11,7 @@ import frc.robot.Constants.*;
 public class Robot extends TimedRobot {
   public static final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
   public static final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
-  public static final Controller controller = new Controller(ControllerConstants.USBindex);
+  public static final Controller controller = new Controller(ControllerConstants.USB);
 
   @Override
   public void robotInit() {
@@ -55,8 +55,6 @@ public class Robot extends TimedRobot {
     Drivetrain.feed();
 
     // manage driver control
-    // default is joystick
-
     if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
 
     // limelight pipeline
@@ -79,7 +77,7 @@ public class Robot extends TimedRobot {
 
     if (!Drivetrain.usingController) {
       // drive code
-      if (stickR.getRawButton(JoystickConstants.limelightMode)) {
+      if (stickR.getTrigger()) {
         Drivetrain.alignLimelight();
       } else {
         if (Drivetrain.kTankFlag) {
@@ -98,10 +96,11 @@ public class Robot extends TimedRobot {
     }
 
     // maintain position
-    if (stickL.getRawButtonPressed(1)) Drivetrain.saveCurrentRobotPosition();
-    if (stickL.getRawButton(1)) Drivetrain.maintainRobotPosition();
+    if (stickL.getTrigger()) Drivetrain.maintainRobotPosition(stickL.getTriggerPressed());
 
+    // elevator and pulley
     if (!controller.usingPOV()) {
+      // manual
       if (controller.getY()) Elevator.rotateDown();
       else if (controller.getA()) Elevator.rotateUp();
       else Elevator.stopPulley();
@@ -110,6 +109,7 @@ public class Robot extends TimedRobot {
       else if (controller.getB()) Elevator.retract();
       else Elevator.stopElevator();
     } else {
+      // cool automatic
       Elevator.handlePOV(controller.getPOV());
     }
 
