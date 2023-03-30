@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
+import frc.robot.Constants.ControllerConstants;
 
 public class Controller {
   private Joystick controller;
@@ -38,19 +39,19 @@ public class Controller {
   }
 
   public double getLeftX() {
-    return controller.getRawAxis(1);
+    return controller.getRawAxis(ControllerConstants.leftX);
   }
 
   public double getLeftY() {
-    return controller.getRawAxis(0);
+    return controller.getRawAxis(ControllerConstants.leftY);
   }
 
   public double getRightX() {
-    return controller.getRawAxis(3);
+    return controller.getRawAxis(ControllerConstants.rightX);
   }
 
   public double getRightY() {
-    return controller.getRawAxis(2);
+    return controller.getRawAxis(ControllerConstants.rightY);
   }
 
   public boolean getRawButton(int button) {
@@ -66,146 +67,146 @@ public class Controller {
   }
 
   public boolean getX() {
-    return getRawButton(1);
+    return getRawButton(ControllerConstants.X);
   }
 
   public boolean getXPressed() {
-    return getRawButtonPressed(1);
+    return getRawButtonPressed(ControllerConstants.X);
   }
 
   public boolean getXReleased() {
-    return getRawButtonReleased(1);
+    return getRawButtonReleased(ControllerConstants.X);
   }
 
   public boolean getA() {
-    return getRawButton(2);
+    return getRawButton(ControllerConstants.A);
   }
 
   public boolean getAPressed() {
-    return getRawButtonPressed(2);
+    return getRawButtonPressed(ControllerConstants.A);
   }
 
   public boolean getAReleased() {
-    return getRawButtonReleased(2);
+    return getRawButtonReleased(ControllerConstants.A);
   }
 
   public boolean getB() {
-    return getRawButton(3);
+    return getRawButton(ControllerConstants.B);
   }
 
   public boolean getBPressed() {
-    return getRawButtonPressed(3);
+    return getRawButtonPressed(ControllerConstants.B);
   }
 
   public boolean getBReleased() {
-    return getRawButtonReleased(3);
+    return getRawButtonReleased(ControllerConstants.B);
   }
 
   public boolean getY() {
-    return getRawButton(4);
+    return getRawButton(ControllerConstants.Y);
   }
 
   public boolean getYPressed() {
-    return getRawButtonPressed(4);
+    return getRawButtonPressed(ControllerConstants.Y);
   }
 
   public boolean getYReleased() {
-    return getRawButtonReleased(4);
+    return getRawButtonReleased(ControllerConstants.Y);
   }
 
   public boolean getLeftBumper() {
-    return getRawButton(5);
+    return getRawButton(ControllerConstants.leftBumper);
   }
 
   public boolean getLeftBumperPressed() {
-    return getRawButtonPressed(5);
+    return getRawButtonPressed(ControllerConstants.leftBumper);
   }
 
   public boolean getLeftBumperReleased() {
-    return getRawButtonReleased(5);
+    return getRawButtonReleased(ControllerConstants.leftBumper);
   }
 
   public boolean getRightBumper() {
-    return getRawButton(6);
+    return getRawButton(ControllerConstants.rightBumper);
   }
 
   public boolean getRightBumperPressed() {
-    return getRawButtonPressed(6);
+    return getRawButtonPressed(ControllerConstants.rightBumper);
   }
 
   public boolean getRightBumperReleased() {
-    return getRawButtonReleased(6);
+    return getRawButtonReleased(ControllerConstants.rightBumper);
   }
 
   public boolean getLeftTrigger() {
-    return getRawButton(7);
+    return getRawButton(ControllerConstants.leftTrigger);
   }
 
   public boolean getLeftTriggerPressed() {
-    return getRawButtonPressed(7);
+    return getRawButtonPressed(ControllerConstants.leftTrigger);
   }
 
   public boolean getLeftTriggerReleased() {
-    return getRawButtonReleased(7);
+    return getRawButtonReleased(ControllerConstants.leftTrigger);
   }
 
   public boolean getRightTrigger() {
-    return getRawButton(8);
+    return getRawButton(ControllerConstants.rightTrigger);
   }
 
   public boolean getRightTriggerPressed() {
-    return getRawButtonPressed(8);
+    return getRawButtonPressed(ControllerConstants.rightTrigger);
   }
 
   public boolean getRightTriggerReleased() {
-    return getRawButtonReleased(8);
+    return getRawButtonReleased(ControllerConstants.rightTrigger);
   }
 
   public boolean getBack() {
-    return getRawButton(9);
+    return getRawButton(ControllerConstants.back);
   }
 
   public boolean getBackPressed() {
-    return getRawButtonPressed(9);
+    return getRawButtonPressed(ControllerConstants.back);
   }
 
   public boolean getBackReleased() {
-    return getRawButtonReleased(9);
+    return getRawButtonReleased(ControllerConstants.back);
   }
 
   public boolean getStart() {
-    return getRawButton(10);
+    return getRawButton(ControllerConstants.start);
   }
 
   public boolean getStartPressed() {
-    return getRawButtonPressed(10);
+    return getRawButtonPressed(ControllerConstants.start);
   }
 
   public boolean getStartReleased() {
-    return getRawButtonReleased(10);
+    return getRawButtonReleased(ControllerConstants.start);
   }
 
   public boolean getLeftThumb() {
-    return getRawButton(11);
+    return getRawButton(ControllerConstants.leftThumb);
   }
 
   public boolean getLeftThumbPressed() {
-    return getRawButtonPressed(11);
+    return getRawButtonPressed(ControllerConstants.leftThumb);
   }
 
   public boolean getLeftThumbReleased() {
-    return getRawButtonReleased(11);
+    return getRawButtonReleased(ControllerConstants.leftThumb);
   }
 
   public boolean getRightThumb() {
-    return getRawButton(12);
+    return getRawButton(ControllerConstants.rightThumb);
   }
 
   public boolean getRightThumbPressed() {
-    return getRawButtonPressed(12);
+    return getRawButtonPressed(ControllerConstants.rightThumb);
   }
 
   public boolean getRightThumbReleased() {
-    return getRawButtonReleased(12);
+    return getRawButtonReleased(ControllerConstants.rightThumb);
   }
 }
