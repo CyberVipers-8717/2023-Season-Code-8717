@@ -9,35 +9,30 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
 public class Robot extends TimedRobot {
-  public static boolean usingController = false;
-
-  public final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
-  public final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
-  public final Joystick controller = new Joystick(ControllerConstants.USBindex);
-
-  public static final Drivetrain driveTrain = new Drivetrain();
-  public static final Elevator elevator = new Elevator();
-  public static final Lime limelight = new Lime();
-  public static final Hand hand = new Hand();
+  public static final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
+  public static final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
+  public static final Controller controller = new Controller(ControllerConstants.USBindex);
 
   @Override
   public void robotInit() {
-    Autonomous.initChooser();
-    hand.off();
+    Drivetrain.robotInit();
+    Elevator.robotInit();
+    Hand.robotInit();
+    Autonomous.robotInit();
   }
 
   @Override
   public void robotPeriodic() {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
-    SmartDashboard.putBoolean("Using Joystick", !usingController);
-    SmartDashboard.putNumber("Elevator", elevator.getElevatorPosition());
-    SmartDashboard.putNumber("Pulley", elevator.getPulleyPosition());
-    SmartDashboard.putBoolean("Hard Braking", driveTrain.getDriveIdle()==IdleMode.kBrake);
+    SmartDashboard.putBoolean("Using Joystick", !Drivetrain.usingController);
+    SmartDashboard.putNumber("Elevator", Elevator.getElevatorPosition());
+    SmartDashboard.putNumber("Pulley", Elevator.getPulleyPosition());
+    SmartDashboard.putBoolean("Hard Braking", Drivetrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
     SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
-    SmartDashboard.putNumber("Left Wheel", driveTrain.getLeftPosition());
-    SmartDashboard.putNumber("Right Wheel", driveTrain.getRightPosition());
+    SmartDashboard.putNumber("Left Wheel", Drivetrain.getLeftPosition());
+    SmartDashboard.putNumber("Right Wheel", Drivetrain.getRightPosition());
   }
 
   @Override
@@ -52,99 +47,88 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    usingController = false;
+    Drivetrain.usingController = false;
   }
 
   @Override
   public void teleopPeriodic() {
-    driveTrain.diffDrive.feed();
+    Drivetrain.feed();
 
     // manage driver control
     // default is joystick
-    if (controller.getRawButtonPressed(ControllerConstants.toggleDriverControl)) usingController = usingController?false:true;
+
+    if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
 
     // limelight pipeline
-    if (controller.getRawButtonPressed(12)) Lime.incrementPipeline();
+    if (controller.getRightThumbPressed()) Lime.incrementPipeline();
 
     // targetting object
-    if (controller.getRawButtonPressed(ControllerConstants.toggleTarget)) Elevator.targetingCube = Elevator.targetingCube?false:true;
+    if (controller.getRightBumperPressed()) Elevator.toggleTarget();
 
     // zero encoders
-    if (controller.getRawButtonPressed(ControllerConstants.zeroEncoders)) {
-      elevator.zeroEncoders();
-      driveTrain.zeroDriveEncoders();
+    if (controller.getLeftThumbPressed()) {
+      Elevator.zeroEncoders();
+      Drivetrain.zeroDriveEncoders();
     }
 
     // braking
-    if (stickR.getRawButtonPressed(2)) driveTrain.toggleDriveIdle();
-    if (controller.getRawButtonPressed(ControllerConstants.brakingModeIndex)) driveTrain.toggleDriveIdle();
+    if (stickR.getRawButtonPressed(2) || controller.getBackPressed()) Drivetrain.toggleDriveIdle();
 
     // tank flag
-    if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton)) driveTrain.toggleTankFlag();
+    if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton) || controller.getLeftBumperPressed()) Drivetrain.toggleTankFlag();
 
-    if (!usingController) {
+    if (!Drivetrain.usingController) {
       // drive code
       if (stickR.getRawButton(JoystickConstants.limelightMode)) {
-        double[] modifiedCommands = limelight.autoCenter();
-        driveTrain.tank(modifiedCommands[0],modifiedCommands[1]);
+        Drivetrain.alignLimelight();
       } else {
         if (Drivetrain.kTankFlag) {
           double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
           double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
-          driveTrain.tank(left, right);
+          Drivetrain.tank(left, right);
         } else {
           double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
           double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
-          driveTrain.arcade(forward, rotation);
+          Drivetrain.arcade(forward, rotation);
         }
       }
     } else {
-      double forward = controller.getRawAxis(ControllerConstants.arcadeForward);
-      double steering = controller.getRawAxis(ControllerConstants.arcadeRotation);
-      driveTrain.arcade(forward, steering);
+      // Drivetrain.generic(controller.getDriveAxes());
+      Drivetrain.arcade(controller.getArcadeAxes());
     }
 
     // maintain position
-    if (stickL.getRawButtonPressed(1)) driveTrain.saveCurrentRobotPosition();
-    if (stickL.getRawButton(1)) driveTrain.maintainRobotPosition();
+    if (stickL.getRawButtonPressed(1)) Drivetrain.saveCurrentRobotPosition();
+    if (stickL.getRawButton(1)) Drivetrain.maintainRobotPosition();
 
-    // auto pulley and elevator
-    if (controller.getPOV()==-1) {
-      // manual pulley
-      if (controller.getRawButton(ControllerConstants.rotateArmDownIndex)) {
-        elevator.rotateDown();
-      } else if (controller.getRawButton(ControllerConstants.rotateArmUpIndex)) {
-        elevator.rotateUp();
-      } else {
-        elevator.stopPulley();
-      }
+    if (!controller.usingPOV()) {
+      if (controller.getY()) Elevator.rotateDown();
+      else if (controller.getA()) Elevator.rotateUp();
+      else Elevator.stopPulley();
 
-      // manual elevator
-      if (controller.getRawButton(ControllerConstants.elevatorExtend)) {
-        elevator.extend();
-      } else if (controller.getRawButton(ControllerConstants.elevatorRetract)) {
-        elevator.retract();
-      } else {
-        elevator.stopElevator();
-      }
-    } else elevator.handlePOV(controller.getPOV());
+      if (controller.getX()) Elevator.extend();
+      else if (controller.getB()) Elevator.retract();
+      else Elevator.stopElevator();
+    } else {
+      Elevator.handlePOV(controller.getPOV());
+    }
 
     // hand
-    if (controller.getRawButtonPressed(ControllerConstants.handOpen)) hand.open();
-    else if (controller.getRawButtonPressed(ControllerConstants.handClose)) hand.close();
+    if (controller.getLeftTriggerPressed()) Hand.open();
+    else if (controller.getRightTriggerPressed()) Hand.close();
   }
 
   @Override
   public void disabledInit() {
-    driveTrain.defaultFlags();
-    driveTrain.stopMotor();
-    elevator.stopMotor();
+    Drivetrain.defaultFlags();
+    Drivetrain.stopMotor();
+    Elevator.stopMotor();
   }
 
   @Override
   public void disabledPeriodic() {
-    driveTrain.stopMotor();
-    elevator.stopMotor();
+    Drivetrain.stopMotor();
+    Elevator.stopMotor();
   }
 
   @Override

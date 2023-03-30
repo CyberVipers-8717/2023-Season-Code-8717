@@ -19,7 +19,7 @@ public class Autonomous {
   private static int superStep = 0;
 
   /** Creates a {@link SendableChooser} and puts it on the {@link SmartDashboard}. */
-  public static void initChooser() {
+  public static void robotInit() {
     m_chooser.setDefaultOption("Score high cube", kDefaultAuto);
     m_chooser.addOption("Score high cube and balance", kAutoOne);
     m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
@@ -31,18 +31,16 @@ public class Autonomous {
   public static void init() {
     m_autoSelected = m_chooser.getSelected();
 
-    Robot.driveTrain.zeroDriveEncoders();
-    Robot.elevator.zeroEncoders();
-    Elevator.targetingCube = true;
-
-    Robot.hand.close();
+    Drivetrain.zeroDriveEncoders();
+    Elevator.zeroEncoders();
+    Hand.close();
 
     restartDelayTimer();
   }
 
   /** Contains code that is run in autonomousPeriodic. */
   public static void periodic() {
-    Robot.driveTrain.feed();
+    Drivetrain.feed();
     switch (m_autoSelected) {
       case kDefaultAuto:
         Elevator.targetingCube = true;
@@ -59,12 +57,12 @@ public class Autonomous {
         taxiRobot(1);
         break;
       case kAutoThree:
-        Robot.driveTrain.stopMotor();
-        Robot.elevator.stopMotor();
+        Drivetrain.stopMotor();
+        Elevator.stopMotor();
         break;
       default:
-        Robot.driveTrain.stopMotor();
-        Robot.elevator.stopMotor();
+        Drivetrain.stopMotor();
+        Elevator.stopMotor();
         break;
     }
   }
@@ -74,7 +72,7 @@ public class Autonomous {
     if (superStep == thisStep) {
       // move arm up
       if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtHigh()) Robot.elevator.armToHigh();
+        if (!Elevator.armAtHigh()) Elevator.armToHigh();
         else {
           restartDelayTimer();
           currentStep++;
@@ -82,13 +80,13 @@ public class Autonomous {
       }
       // open hand
       else if (currentStep == 1 && timeElapsed(0.5)) {
-        Robot.hand.open();
+        Hand.open();
         restartDelayTimer();
         currentStep++;
       }
       // move arm down
       else if (currentStep == 2 && timeElapsed(0.5)) {
-        if (!Robot.elevator.armAtRest()) Robot.elevator.armToRest();
+        if (!Elevator.armAtRest()) Elevator.armToRest();
         else {
           restartDelayTimer();
           currentStep++;
@@ -96,7 +94,7 @@ public class Autonomous {
       }
       // close hand
       else if (currentStep == 3 && timeElapsed(0.5)) {
-        Robot.hand.close();
+        Hand.close();
         restartDelayTimer();
         currentStep = 0;
         superStep++;
@@ -110,7 +108,7 @@ public class Autonomous {
     if (superStep == thisStep) {
       // move robot to balance
       if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Robot.driveTrain.tracksAtPosition(41, 41)) Robot.driveTrain.moveTracksTo(41, 41);
+        if (!Drivetrain.tracksAtPosition(41, 41)) Drivetrain.moveTracksTo(41, 41);
         else {
           restartDelayTimer();
           currentStep++;
@@ -118,12 +116,12 @@ public class Autonomous {
       }
       // save robot position
       else if (currentStep == 1 && timeElapsed(0.5)) {
-        Robot.driveTrain.saveCurrentRobotPosition();
+        Drivetrain.saveCurrentRobotPosition();
         currentStep++;
       }
       // keep robot at saved position
       if (currentStep == 2) {
-        Robot.driveTrain.maintainRobotPosition();
+        Drivetrain.maintainRobotPosition();
       }
       // done
     }
@@ -134,7 +132,7 @@ public class Autonomous {
     if (superStep == thisStep) {
       // move robot outside of community
       if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Robot.driveTrain.tracksAtPosition(50, 50)) Robot.driveTrain.moveTracksTo(50, 50);
+        if (!Drivetrain.tracksAtPosition(50, 50)) Drivetrain.moveTracksTo(50, 50);
         else {
           restartDelayTimer();
           currentStep++;
@@ -142,12 +140,12 @@ public class Autonomous {
       }
       // save robot position
       else if (currentStep == 1 && timeElapsed(0.5)) {
-        Robot.driveTrain.saveCurrentRobotPosition();
+        Drivetrain.saveCurrentRobotPosition();
         currentStep++;
       }
       // keep robot at saved position
       if (currentStep == 2) {
-        Robot.driveTrain.maintainRobotPosition();
+        Drivetrain.maintainRobotPosition();
       }
       // done
     }

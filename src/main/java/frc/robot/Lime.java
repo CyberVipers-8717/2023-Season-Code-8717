@@ -30,12 +30,12 @@ public class Lime {
   public static final double minCommand = 0.15;
   public static final double maxCommand = 0.55;
 
-  public boolean getIsTargetFound() {
+  public static boolean getIsTargetFound() {
     boolean targetCheck = LimelightHelpers.getTV("limelight");
     return targetCheck;
   }  
 
-  public double[] autoCenter() {
+  public static double[] autoCenter() {
     double adjust = 0;
     double headingError = LimelightHelpers.getTX("limelight");
     if (Math.abs(headingError) > 0.8) {

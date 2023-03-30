@@ -9,25 +9,26 @@ public class Hand {
   public static final Value openChannel = Value.kForward;
   public static final Value closeChannel = Value.kReverse;
 
-  public Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
-  public DoubleSolenoid solenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
+  public static Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
+  public static DoubleSolenoid solenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
 
-  public Hand() {
+  public static void robotInit() {
     pcmCompressor.enableDigital();
+    off();
   }
 
   /** Sets the solenoid to the off channel. */
-  public void off() {
+  public static void off() {
     solenoid.set(Value.kOff);
   }
 
   /** Sets the solenoid to the open hand channel. */
-  public void open() {
+  public static void open() {
     solenoid.set(openChannel);
   }
 
   /** Sets the solenoid to the close hand channel. */
-  public void close() {
+  public static void close() {
     solenoid.set(closeChannel);
   }
 
@@ -35,7 +36,7 @@ public class Hand {
    * @return Boolean indicating if the hand is closed or not, true being the hand
    * is closed and most likely holding an object.
    */
-  public boolean getIsClosed() {
+  public static boolean getIsClosed() {
     return solenoid.get() == closeChannel;
   }
 }
