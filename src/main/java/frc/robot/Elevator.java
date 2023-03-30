@@ -32,6 +32,7 @@ public class Elevator {
   private static RelativeEncoder elevatorEncoderL = elevatorMotorL.getEncoder();
   private static RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
 
+  /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
       elevatorMotorL.setInverted(true);
       pulleyMotor.setIdleMode(IdleMode.kBrake);
