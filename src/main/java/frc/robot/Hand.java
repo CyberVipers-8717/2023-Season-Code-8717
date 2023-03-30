@@ -12,6 +12,7 @@ public class Hand {
   public static Compressor pcmCompressor = new Compressor(PneumaticsModuleType.CTREPCM);
   public static DoubleSolenoid solenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
 
+  /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
     pcmCompressor.enableDigital();
     off();
