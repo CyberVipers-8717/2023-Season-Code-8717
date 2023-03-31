@@ -2,15 +2,14 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.*;
 
 public class Robot extends TimedRobot {
-  public static final Joystick stickL = new Joystick(JoystickConstants.leftUSBindex);
-  public static final Joystick stickR = new Joystick(JoystickConstants.rightUSBindex);
+  public static final CustomJoystick stickL = new CustomJoystick(JoystickConstants.USBleft);
+  public static final CustomJoystick stickR = new CustomJoystick(JoystickConstants.USBright);
   public static final Controller controller = new Controller(ControllerConstants.USB);
 
   @Override
@@ -19,20 +18,18 @@ public class Robot extends TimedRobot {
     Elevator.robotInit();
     Hand.robotInit();
     Autonomous.robotInit();
+    Debugging.robotInit();
   }
 
   @Override
   public void robotPeriodic() {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Joystick", !Drivetrain.usingController);
-    SmartDashboard.putNumber("Elevator", Elevator.getElevatorPosition());
-    SmartDashboard.putNumber("Pulley", Elevator.getPulleyPosition());
     SmartDashboard.putBoolean("Hard Braking", Drivetrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
     SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
-    SmartDashboard.putNumber("Left Wheel", Drivetrain.getLeftPosition());
-    SmartDashboard.putNumber("Right Wheel", Drivetrain.getRightPosition());
+    Debugging.periodic();
   }
 
   @Override
@@ -70,28 +67,20 @@ public class Robot extends TimedRobot {
     }
 
     // braking
-    if (stickR.getRawButtonPressed(2) || controller.getBackPressed()) Drivetrain.toggleDriveIdle();
+    if (stickR.getThumbPressed() || controller.getBackPressed()) Drivetrain.toggleDriveIdle();
 
     // tank flag
-    if (stickL.getRawButtonPressed(JoystickConstants.tankToggleButton) || controller.getLeftBumperPressed()) Drivetrain.toggleTankFlag();
+    if (stickL.getThumbPressed() || controller.getLeftBumperPressed()) Drivetrain.toggleTankFlag();
 
     if (!Drivetrain.usingController) {
       // drive code
       if (stickR.getTrigger()) {
         Drivetrain.alignLimelight();
       } else {
-        if (Drivetrain.kTankFlag) {
-          double left = stickL.getRawAxis(JoystickConstants.tankLeftAxis);
-          double right = stickR.getRawAxis(JoystickConstants.tankRightAxis);
-          Drivetrain.tank(left, right);
-        } else {
-          double forward = stickL.getRawAxis(JoystickConstants.arcadeForwardAxis);
-          double rotation = stickR.getRawAxis(JoystickConstants.arcadeRotationAxis);
-          Drivetrain.arcade(forward, rotation);
-        }
+        if (Drivetrain.kTankFlag) Drivetrain.tank(stickL, stickR);
+        else Drivetrain.arcade(stickL, stickR);
       }
     } else {
-      // Drivetrain.generic(controller.getDriveAxes());
       Drivetrain.arcade(controller.getArcadeAxes());
     }
 
@@ -138,7 +127,9 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {}
 
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+    Autonomous.init();
+  }
 
   @Override
   public void simulationPeriodic() {}

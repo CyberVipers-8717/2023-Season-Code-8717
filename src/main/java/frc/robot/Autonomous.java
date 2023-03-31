@@ -1,166 +1,250 @@
 package frc.robot;
 
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.AutoConstants;
 
 public class Autonomous {
   private static final Timer delayTimer = new Timer();
+  private static final Timer waitingTimer = new Timer();
 
-  private static final SendableChooser<String> m_chooser = new SendableChooser<>();
-  public static String m_autoSelected;
+  public static final ShuffleboardTab AutoTab = Shuffleboard.getTab("Autonomous");
 
-  private static final String kDefaultAuto = "score high cube";
-  private static final String kAutoOne = "score high cube and balance";
-  private static final String kAutoTwo = "score high cube and taxi";
-  private static final String kAutoThree = "do nothing";
+  private static final SendableChooser<String> target = new SendableChooser<>();
+  private static final SendableChooser<String> height = new SendableChooser<>();
+  private static final SendableChooser<String> movement = new SendableChooser<>();
+  private static final SendableChooser<String> rotation = new SendableChooser<>();
+  private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
+    .withWidget(BuiltInWidgets.kNumberSlider).withSize(2, 1).withPosition(2, 0).getEntry();
+
+  private static String m_target;
+  private static String m_height;
+  private static String m_movement;
+  private static String m_rotation;
+  private static double m_delayStart;
 
   private static int currentStep = 0; // indicates current step in a set action like what part of scoring a high cube you are on
   private static int superStep = 0; // indicates the current sequence like you are getting mobility after just doing the high cube sequence
 
-  /** Creates a {@link SendableChooser} and puts it on the {@link SmartDashboard}. */
+  private static final double baseDelay = 0.3;
+
+  /**
+   * Contains code to be run during robotInit.
+   * Initialize all auto choices and put them on the Autonomous tab on the {@link SmartDashboard}.
+   * Each chooser is a {@link SendableChooser} with the start delay being a number slider.
+   */
   public static void robotInit() {
-    m_chooser.setDefaultOption("Score high cube", kDefaultAuto);
-    m_chooser.addOption("Score high cube and balance", kAutoOne);
-    m_chooser.addOption("Score high cube and taxi out of community", kAutoTwo);
-    m_chooser.addOption("Do nothing :(", kAutoThree);
-    SmartDashboard.putData("Auto Chooser", m_chooser);
+    target.setDefaultOption("Cube", AutoConstants.kDefaultTarget);
+    target.addOption("Cone", AutoConstants.kAltTarget);
+    target.addOption("None", AutoConstants.kNoTarget);
+
+    height.setDefaultOption("High", AutoConstants.kDefaultHeight);
+    height.setDefaultOption("Mid", AutoConstants.kAltHeight);
+
+    movement.setDefaultOption("Mobility", AutoConstants.kDefaultMovement);
+    movement.addOption("Balance", AutoConstants.kAltMovement);
+    movement.addOption("None", AutoConstants.kNoMovement);
+
+    rotation.setDefaultOption("None", AutoConstants.kDefaultRotation);
+    rotation.addOption("180", AutoConstants.kAltRotation);
+
+    AutoTab.add("Target", target).withSize(2, 1).withPosition(2, 1);
+    AutoTab.add("Height", height).withSize(2, 1).withPosition(2, 2);
+    AutoTab.add("Movement", movement).withSize(2, 1).withPosition(5, 0);
+    AutoTab.add("Rotation", rotation).withSize(2, 1).withPosition(5, 1);
   }
 
   /** Contains code that is run in autonomousInit. */
   public static void init() {
-    m_autoSelected = m_chooser.getSelected();
+    m_target = target.getSelected();
+    m_height = height.getSelected();
+    m_movement = movement.getSelected();
+    m_rotation = rotation.getSelected();
+    m_delayStart = delayStart.getDouble(0);
 
     Drivetrain.zeroDriveEncoders();
+    Drivetrain.saveStartingAngle();
     Elevator.zeroEncoders();
     Hand.close();
 
-    restartDelayTimer();
+    delayTimer.start();
+    restartWaitingTimer();
+  }
+
+  /**
+   * Contains the sequences of code that pertain to scoring a game piece
+   * during auto at the selected height.
+   * @param thisStep An integer indicating this sequence's index in a list of sequences.
+   * If you wanted to have the moveArm sequence be executed and then the moveRobot sequence,
+   * the thisStep would be 0 as it is the first sequence to be executed.
+   */
+  private static void moveArm(int thisStep) {
+    // deals with target and height
+    if (superStep == thisStep) {
+      if (timeElapsed(waitingTimer, baseDelay)) {
+        // wait for the baseDelay amount of time between doing things
+        if (currentStep == 0) {
+          // manage the target
+          switch(m_target) {
+            case AutoConstants.kNoTarget:
+              // if we have no target move on to next sequence
+              currentStep = 0;
+              superStep++;
+              break;
+            case AutoConstants.kDefaultTarget:
+              Elevator.targetingCube = true;
+              currentStep++;
+              restartWaitingTimer();
+              break;
+            case AutoConstants.kAltTarget:
+              Elevator.targetingCube = false;
+              currentStep++;
+              restartWaitingTimer();
+              break;
+          }
+        } else if (currentStep == 1) {
+          // move the arm
+          switch(m_height) {
+            case AutoConstants.kDefaultHeight:
+              if (!Elevator.armAtHigh()) Elevator.armToHigh();
+              else {
+                restartWaitingTimer();
+                currentStep++;
+              }
+              break;
+            case AutoConstants.kAltHeight:
+              if (!Elevator.armAtMid()) Elevator.armToMid();
+              else {
+                restartWaitingTimer();
+                currentStep++;
+              }
+              break;
+          }
+        } else if (currentStep == 2) {
+          // open the hand
+          Hand.open();
+          restartWaitingTimer();
+          currentStep++;
+        } else if (currentStep == 3) {
+          // retract the arm
+          Elevator.armToRest();
+          restartWaitingTimer();
+          currentStep++;
+        } else if (currentStep == 4) {
+          // close the hand and finish sequence
+          Hand.close();
+          restartWaitingTimer();
+          currentStep = 0;
+          superStep++;
+        }
+      }
+    }
+  }
+
+  /**
+   * Contains the sequences of code that pertain to moving the robot during auto
+   * to either mobility or balance and then rotation if applicable.
+   * @param thisStep An integer indicating this sequence's index in a list of sequences.
+   * If you wanted to have the moveArm sequence be executed and then the moveRobot sequence,
+   * the thisStep would be 0 as it is the first sequence to be executed.
+   */
+  private static void moveRobot(int thisStep) {
+    // deals with robot movement and rotation
+    if (superStep == thisStep) {
+      // wait for the baseDelay amount of time between doing things
+      if (currentStep == 0 && timeElapsed(waitingTimer, baseDelay)) {
+        // move robot
+        switch(m_movement) {
+          case AutoConstants.kNoMovement:
+            // if we have no desired movement distance move on to next sequence
+            currentStep = 0;
+            superStep++;
+            break;
+          case AutoConstants.kDefaultMovement:
+            if (!Drivetrain.tracksAtPosition(50, 50)) Drivetrain.moveTracksTo(50, 50);
+            else {
+              restartWaitingTimer();
+              currentStep++;
+            }
+            break;
+          case AutoConstants.kAltMovement:
+            if (!Drivetrain.tracksAtPosition(41, 41)) Drivetrain.moveTracksTo(41, 41);
+            else {
+              restartWaitingTimer();
+              currentStep++;
+            }
+            break;
+        }
+      } else if (currentStep == 1) {
+        // save robot pos
+        Drivetrain.saveCurrentRobotPosition();
+        currentStep++;
+      } else if (currentStep == 2) {
+        switch(m_movement) {
+          case AutoConstants.kDefaultMovement:
+            // taxi maintain robot pos for 1 sec
+            if (!timeElapsed(waitingTimer, 1)) Drivetrain.maintainRobotPosition();
+            else {
+              restartWaitingTimer();
+              currentStep++;
+            }
+            break;
+          case AutoConstants.kAltMovement:
+            // balance maintain robot pos for rest of auto
+            Drivetrain.maintainRobotPosition();
+            break;
+        }
+      } else if (currentStep == 3 && timeElapsed(waitingTimer, baseDelay)) {
+        // rotate robot
+        if (m_rotation == AutoConstants.kAltRotation) {
+          if (!Drivetrain.facingAngle(Drivetrain.startingAngle180Offset)) Drivetrain.rotateToCorrectAngle(Drivetrain.startingAngle180Offset);
+          else {
+            restartWaitingTimer();
+            currentStep++;
+          }
+        } else {
+          // if we are not rotating after taxi then move on to next sequence
+          currentStep = 0;
+          superStep++;
+        }
+        
+      } else if (currentStep == 4 && timeElapsed(waitingTimer, baseDelay)) {
+        // save robot pos
+        Drivetrain.saveCurrentRobotPosition();
+        currentStep++;
+      } else if (currentStep == 5 && timeElapsed(waitingTimer, baseDelay)) {
+        // maintain robot pos
+        Drivetrain.maintainRobotPosition();
+      }
+    }
   }
 
   /** Contains code that is run in autonomousPeriodic. */
   public static void periodic() {
     Drivetrain.feed();
-    switch (m_autoSelected) {
-      case kDefaultAuto:
-        Elevator.targetingCube = true;
-        scoreHigh(0);
-        break;
-      case kAutoOne:
-        Elevator.targetingCube = true;
-        scoreHigh(0);
-        balanceRobot(1);
-        break;
-      case kAutoTwo:
-        Elevator.targetingCube = true;
-        scoreHigh(0);
-        taxiRobot(1);
-        break;
-      case kAutoThree:
-        Drivetrain.stopMotor();
-        Elevator.stopMotor();
-        break;
-      default:
-        Drivetrain.stopMotor();
-        Elevator.stopMotor();
-        break;
-    }
-  }
 
-  /** Scores a cube at the high grid position. */
-  public static void scoreHigh(int thisStep) {
-    if (superStep == thisStep) {
-      // move arm up
-      if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Elevator.armAtHigh()) Elevator.armToHigh();
-        else {
-          restartDelayTimer();
-          currentStep++;
-        }
-      }
-      // open hand
-      else if (currentStep == 1 && timeElapsed(0.5)) {
-        Hand.open();
-        restartDelayTimer();
-        currentStep++;
-      }
-      // move arm down
-      else if (currentStep == 2 && timeElapsed(0.5)) {
-        if (!Elevator.armAtRest()) Elevator.armToRest();
-        else {
-          restartDelayTimer();
-          currentStep++;
-        }
-      }
-      // close hand
-      else if (currentStep == 3 && timeElapsed(0.5)) {
-        Hand.close();
-        restartDelayTimer();
-        currentStep = 0;
-        superStep++;
-      }
-      // done
-    }
-  }
-
-  /** Move the robot to balance on the charging station in a crude way. */
-  public static void balanceRobot(int thisStep) {
-    if (superStep == thisStep) {
-      // move robot to balance
-      if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Drivetrain.tracksAtPosition(41, 41)) Drivetrain.moveTracksTo(41, 41);
-        else {
-          restartDelayTimer();
-          currentStep++;
-        }
-      }
-      // save robot position
-      else if (currentStep == 1 && timeElapsed(0.5)) {
-        Drivetrain.saveCurrentRobotPosition();
-        currentStep++;
-      }
-      // keep robot at saved position
-      if (currentStep == 2) {
-        Drivetrain.maintainRobotPosition();
-      }
-      // done
-    }
-  }
-
-  /** Taxi the robot to outside the community zone. */
-  public static void taxiRobot(int thisStep) {
-    if (superStep == thisStep) {
-      // move robot outside of community
-      if (currentStep == 0 && timeElapsed(0.5)) {
-        if (!Drivetrain.tracksAtPosition(50, 50)) Drivetrain.moveTracksTo(50, 50);
-        else {
-          restartDelayTimer();
-          currentStep++;
-        }
-      }
-      // save robot position
-      else if (currentStep == 1 && timeElapsed(0.5)) {
-        Drivetrain.saveCurrentRobotPosition();
-        currentStep++;
-      }
-      // keep robot at saved position
-      if (currentStep == 2) {
-        Drivetrain.maintainRobotPosition();
-      }
-      // done
+    if (timeElapsed(delayTimer, m_delayStart)) {
+      moveArm(0);
+      moveRobot(1);
     }
   }
 
   /**
-   * @param delayedTime The time the delayTimer will be checked against.
-   * @return A boolean indicating if the delayTimer has reached, or exceeded, the indicated delayedTime.
+   * @param timer The Timer to check the time of.
+   * @param delayedTime The time the passed in Timer will be checked against.
+   * @return A boolean if the passed in Timer has reached or exceed the indicated delayedTime.
    */
-  private static boolean timeElapsed(double delayedTime) {
-    return delayTimer.get() >= delayedTime;
+  private static boolean timeElapsed(Timer timer, double delayedTime) {
+    return timer.get() >= delayedTime;
   }
 
-  /** Restarts the delayTimer. */
-  private static void restartDelayTimer() {
-    delayTimer.restart();
+  /** Restarts the waitingTimer. */
+  private static void restartWaitingTimer() {
+    waitingTimer.restart();
   }
 }

@@ -5,6 +5,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
@@ -14,7 +15,7 @@ public class Drivetrain {
   private static final double tankScale = 0.8;
   private static final double minimumEncoderDifference = 0.5;
   private static final double whenToScaleCommand = 5;
-  private static final double maximumCommand = 0.35;
+  private static final double maximumCommand = 0.25;
 
   public static boolean usingController = false;
 
@@ -37,11 +38,56 @@ public class Drivetrain {
   private static RelativeEncoder encoderRF = motorRF.getEncoder();
   private static RelativeEncoder encoderRB = motorRB.getEncoder();
 
+  private static ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+  public static double startingAngle = 0;
+  public static double startingAngle180Offset = 180;
+
   /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
     motorLB.setInverted(true);
     motorLF.setInverted(true);
     setDriveIdle(IdleMode.kBrake);
+    gyro.calibrate();
+  }
+
+  public static void saveStartingAngle() {
+    startingAngle = getAngle();
+    startingAngle180Offset = get180Offset(startingAngle);
+  }
+
+  /**
+   * @return The current angle of the robot. The angle increases as the gyro turns clockwise
+   * when looked at from above.
+   */
+  public static double getAngle() {
+    return gyro.getAngle()%360;
+  }
+
+  /**
+   * @return The 180 degree opposite of the target angle.
+   */
+  public static double get180Offset(double angle) {
+    return (angle+180)%360;
+  }
+
+  /**
+   * Rotates the robot to face any given angle.
+   * @param target The angle, in degrees, that the robot should face.
+   */
+  public static void rotateToCorrectAngle(double target) {
+    double adjust = 0;
+    double angleError = (target%360) - getAngle();
+    double abs = Math.abs(angleError);
+    if (abs > Lime.minimumHeadingError) {
+      adjust = Lime.controlConstant * abs + Lime.minCommand;
+      adjust = Math.min(adjust, Lime.maxCommand);
+      adjust = Math.copySign(adjust, angleError);
+    }
+    tank(-adjust, adjust);
+  }
+
+  public static boolean facingAngle(double target) {
+    return Math.abs((target%360)-getAngle()) < Lime.minimumHeadingError;
   }
 
   /** Feeds the motor safety objects of the drive motors. */
@@ -90,6 +136,15 @@ public class Drivetrain {
     arcade(vals[0], vals[1]);
   }
 
+  /**
+   * Calls the arcadeDrive method of the internal {@link DifferentialDrive} object.
+   * @param stickL The {@link CustomJoystick} that the forward speed comes from.
+   * @param stickR The {@link CustomJoystick} that the rotation speed comes from.
+   */
+  public static void arcade(CustomJoystick stickL, CustomJoystick stickR) {
+    arcade(stickL.getX(), stickR.getY());
+  }
+
   /** Calls the tankDrive method of the internal {@link DifferentialDrive} object.
    * @param left Robot's left side speed along the X axis. Forward is positive.
    * @param right Robot's right side speed along the X axis. Forward is positive.
@@ -106,6 +161,15 @@ public class Drivetrain {
   */
   public static void tank(double[] vals) {
     tank(vals[0], vals[1]);
+  }
+
+  /**
+   * Calls the tankDrive method of the internal {@link DifferentialDrive} object.
+   * @param stickL The {@link CustomJoystick} that the left track speed comes from.
+   * @param stickR The {@link CustomJoystick} that the right track speed comes from.
+   */
+  public static void tank(CustomJoystick stickL, CustomJoystick stickR) {
+    tank(stickL.getX(), stickR.getX());
   }
 
   /**
