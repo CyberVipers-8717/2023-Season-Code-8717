@@ -5,10 +5,14 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import frc.robot.Constants.ElevatorConstants;
 
-public class Elevator {
+public class Elevator implements Sendable {
+  private static double currentElevatorTarget;
+  private static double currentPulleyTarget;
   public static boolean targetingCube = true;
 
   private static final double manualRotateDownScale = 0.5;
@@ -31,6 +35,18 @@ public class Elevator {
   private static RelativeEncoder pulleyEncoder = pulleyMotor.getEncoder();
   private static RelativeEncoder elevatorEncoderL = elevatorMotorL.getEncoder();
   private static RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
+
+  /** Initializes the sendable. */
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("Elevator");
+    builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
+    builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
+    builder.addDoubleProperty("Elevator target", Elevator::getCurrentElevatorTarget, null);
+    builder.addDoubleProperty("Pulley target", Elevator::getCurrentPulleyTarget, null);
+    builder.addBooleanProperty("Elevator at target", () -> Elevator.elevatorAtPosition(Elevator.getCurrentElevatorTarget()), null);
+    builder.addBooleanProperty("Pulley at target", () -> Elevator.pulleyAtPosition(Elevator.getCurrentPulleyTarget()), null);
+  }
 
   /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
@@ -107,7 +123,15 @@ public class Elevator {
    * @param target The encoder position that the pulley motor will run to match.
    */
   public static void pulleyTo(double target) {
+    Elevator.currentElevatorTarget = target;
     Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
+  }
+
+  /**
+   * @return The current target encoder position of the pulley motor.
+   */
+  public static double getCurrentPulleyTarget() {
+    return Elevator.currentPulleyTarget;
   }
 
   /**
@@ -115,7 +139,15 @@ public class Elevator {
    * @param target The encoder position that the elevator motors will run to match.
    */
   public static void elevatorTo(double target) {
+    Elevator.currentPulleyTarget = target;
     Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
+  }
+
+  /**
+   * @return The current target encoder position of the elevator motors.
+   */
+  public static double getCurrentElevatorTarget() {
+    return Elevator.currentElevatorTarget;
   }
 
   /**

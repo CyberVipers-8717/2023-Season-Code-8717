@@ -70,7 +70,7 @@ public class Autonomous {
     m_delayStart = delayStart.getDouble(0);
 
     Drivetrain.zeroDriveEncoders();
-    Drivetrain.saveStartingAngle();
+    Drivetrain.Gyro.saveStartingAngle();
     Elevator.zeroEncoders();
     Hand.close();
 
@@ -222,7 +222,7 @@ public class Autonomous {
       } else if (currentStep == 3 && timeElapsed(waitingTimer, baseDelay)) {
         // rotate robot
         if (m_rotation == AutoConstants.kAltRotation) {
-          if (!Drivetrain.facingAngle(Drivetrain.startingAngle180Offset)) Drivetrain.rotateToCorrectAngle(Drivetrain.startingAngle180Offset);
+          if (!Drivetrain.Gyro.facingAngle(Drivetrain.Gyro.startingAngle180Offset)) Drivetrain.rotateToCorrectAngle(Drivetrain.Gyro.startingAngle180Offset);
           else {
             restartWaitingTimer();
             currentStep++;

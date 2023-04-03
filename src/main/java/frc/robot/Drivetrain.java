@@ -5,11 +5,13 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-public class Drivetrain {
+public class Drivetrain implements Sendable {
   private static final double arcadeForwardScale = 0.95;
   private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
@@ -38,36 +40,83 @@ public class Drivetrain {
   private static RelativeEncoder encoderRF = motorRF.getEncoder();
   private static RelativeEncoder encoderRB = motorRB.getEncoder();
 
-  private static ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-  public static double startingAngle = 0;
-  public static double startingAngle180Offset = 180;
+  public static class Gyro implements Sendable {
+    private static ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+    public static double startingAngle = 0;
+    public static double startingAngle180Offset = 180;
+    public static double currentAngleTarget;
+
+    /** Initializes the sendable. */
+    @Override
+    public void initSendable(SendableBuilder builder) {
+      builder.setSmartDashboardType("CustomGyro");
+      builder.addDoubleProperty("Starting angle", () -> Gyro.startingAngle, null);
+      builder.addDoubleProperty("Current angle", Gyro::getAngle, null);
+      builder.addDoubleProperty("Angle target", () -> Gyro.currentAngleTarget, null);
+      builder.addBooleanProperty("Facing target", () -> Gyro.facingAngle(Gyro.currentAngleTarget), null);
+    }
+
+    /** Initialization code. */
+    public static void init() {
+      calibrate();
+    }
+
+    /**
+     * @return The current angle of the robot. The angle increases as the gyro turns clockwise
+     * when looked at from above.
+     */
+    public static double getAngle() {
+      return gyro.getAngle()%360;
+    }
+
+    /**
+     * @return The 180 degree opposite of the target angle.
+     */
+    public static double get180Offset(double angle) {
+      return (angle+180)%360;
+    }
+    
+    /** Calibrates the gyro. */
+    public static void calibrate() {
+      gyro.calibrate();
+    }
+    
+    /** Saves the starting angle of the robot and the 180 degree offset of it. */
+    public static void saveStartingAngle() {
+      startingAngle = getAngle();
+      startingAngle180Offset = get180Offset(startingAngle);
+    }
+
+    /**
+     * @param target The angle to check that the gyro is facing.
+     * @return A boolean indicating if the gyro is facing the desired angle.
+     */
+    public static boolean facingAngle(double target) {
+      return Math.abs((target%360)-Gyro.getAngle()) < Lime.minimumHeadingError;
+    }
+  }
+
+  public static double currentLeftTarget;
+  public static double currentRightTarget;
+
+  /** Initializes the sendable. */
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("Drivetrain");
+    builder.addDoubleProperty("Left position", Drivetrain::getLeftPosition, null);
+    builder.addDoubleProperty("Right position", Drivetrain::getRightPosition, null);
+    builder.addDoubleProperty("Left target", () -> Drivetrain.currentLeftTarget, null);
+    builder.addDoubleProperty("Right target", () -> Drivetrain.currentRightTarget, null);
+    builder.addBooleanProperty("Left at target", () -> Drivetrain.leftTrackAtPosition(Drivetrain.currentLeftTarget), null);
+    builder.addBooleanProperty("Right at target", () -> Drivetrain.rightTrackAtPosition(Drivetrain.currentRightTarget), null);
+  }
 
   /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
     motorLB.setInverted(true);
     motorLF.setInverted(true);
     setDriveIdle(IdleMode.kBrake);
-    gyro.calibrate();
-  }
-
-  public static void saveStartingAngle() {
-    startingAngle = getAngle();
-    startingAngle180Offset = get180Offset(startingAngle);
-  }
-
-  /**
-   * @return The current angle of the robot. The angle increases as the gyro turns clockwise
-   * when looked at from above.
-   */
-  public static double getAngle() {
-    return gyro.getAngle()%360;
-  }
-
-  /**
-   * @return The 180 degree opposite of the target angle.
-   */
-  public static double get180Offset(double angle) {
-    return (angle+180)%360;
+    Gyro.init();
   }
 
   /**
@@ -75,8 +124,9 @@ public class Drivetrain {
    * @param target The angle, in degrees, that the robot should face.
    */
   public static void rotateToCorrectAngle(double target) {
+    Gyro.currentAngleTarget = target;
     double adjust = 0;
-    double angleError = (target%360) - getAngle();
+    double angleError = (target%360) - Gyro.getAngle();
     double abs = Math.abs(angleError);
     if (abs > Lime.minimumHeadingError) {
       adjust = Lime.controlConstant * abs + Lime.minCommand;
@@ -84,10 +134,6 @@ public class Drivetrain {
       adjust = Math.copySign(adjust, angleError);
     }
     tank(-adjust, adjust);
-  }
-
-  public static boolean facingAngle(double target) {
-    return Math.abs((target%360)-getAngle()) < Lime.minimumHeadingError;
   }
 
   /** Feeds the motor safety objects of the drive motors. */
