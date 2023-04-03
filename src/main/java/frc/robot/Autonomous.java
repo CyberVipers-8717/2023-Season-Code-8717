@@ -45,7 +45,7 @@ public class Autonomous {
     target.addOption("None", AutoConstants.kNoTarget);
 
     height.setDefaultOption("High", AutoConstants.kDefaultHeight);
-    height.setDefaultOption("Mid", AutoConstants.kAltHeight);
+    height.addOption("Mid", AutoConstants.kAltHeight);
 
     movement.setDefaultOption("Mobility clear side", AutoConstants.kDefaultMovement);
     movement.addOption("Mobility bump side", AutoConstants.kAltDefaultMovement);
