@@ -17,7 +17,7 @@ public class Elevator {
   private static final double manualRetractScale = 0.3;
 
   private static final double minimumElevatorDifference = 0.5;
-  private static final double minimumPulleyDifference = 1;
+  private static final double minimumPulleyDifference = 0.5;
   private static final double whenToScaleElevatorCommand = 15;
   private static final double whenToScalePulleyCommand = 25;
   private static final double maximumElevatorCommand = 0.85;

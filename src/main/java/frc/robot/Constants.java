@@ -1,6 +1,22 @@
 package frc.robot;
 
 public class Constants {
+    public static final class AutoConstants {
+        public static final String kDefaultTarget = "cube";
+        public static final String kAltTarget = "cone";
+        public static final String kNoTarget = "none";
+
+        public static final String kDefaultHeight = "high";
+        public static final String kAltHeight = "mid";
+
+        public static final String kDefaultMovement = "taxi clear";
+        public static final String kAltDefaultMovement = "taxi bump";
+        public static final String kAltMovement = "balance";
+        public static final String kNoMovement = "none";
+
+        public static final String kDefaultRotation = "none";
+        public static final String kAltRotation = "180";
+    }
     public static final class ElevatorConstants {
         // E indicates elevator (arm extending and retracting)
         // P indicates pulley (arm rotation)
@@ -10,7 +26,7 @@ public class Constants {
         public static final double groundE = 4;
         public static final double quickSP = 13;
         public static final double quickSE = 1.5;
-        public static final double restP = 2;
+        public static final double restP = 5;
         public static final double restE = 1.5;
         // all cube heights
         public static final double highSP = 91.5;
@@ -47,16 +63,8 @@ public class Constants {
         public static final int rightX = 3; // right thumb up and down [-1, 1]
     }
     public static final class JoystickConstants {
-        public static final int arcadeForwardAxis = 1;
-        public static final int arcadeRotationAxis = 0;
-        public static final int tankLeftAxis = 1;
-        public static final int tankRightAxis = 1;
-        public static final int tankToggleButton = 2;
-        public static final int reverseToggleButton = 11;
-        public static final int limelightMode = 1;
-        public static final int limelightToggle = 3;
-        public static final int leftUSBindex = 0;
-        public static final int rightUSBindex = 2;
-        public static final int useJoystickIndex = 7;
+        public static final int USBleft = 1;
+        public static final int USBright = 2;
+        public static final int sideThumb = 2;
     }
 }
