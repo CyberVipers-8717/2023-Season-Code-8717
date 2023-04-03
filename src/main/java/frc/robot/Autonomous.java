@@ -20,7 +20,7 @@ public class Autonomous {
   private static final SendableChooser<String> movement = new SendableChooser<>();
   private static final SendableChooser<String> rotation = new SendableChooser<>();
   private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
-    .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
+  .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
 
   private static String m_target;
   private static String m_height;
