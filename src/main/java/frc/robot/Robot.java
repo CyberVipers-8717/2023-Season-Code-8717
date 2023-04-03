@@ -38,7 +38,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
     SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
     SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
-    Debugging.periodic();
 
     // lime auto april tag
     if (getRobotLifeTime() > 25) {

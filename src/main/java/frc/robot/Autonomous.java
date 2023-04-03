@@ -20,7 +20,7 @@ public class Autonomous {
   private static final SendableChooser<String> movement = new SendableChooser<>();
   private static final SendableChooser<String> rotation = new SendableChooser<>();
   private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
-    .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
+  .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
 
   private static String m_target;
   private static String m_height;
@@ -45,7 +45,7 @@ public class Autonomous {
     target.addOption("None", AutoConstants.kNoTarget);
 
     height.setDefaultOption("High", AutoConstants.kDefaultHeight);
-    height.setDefaultOption("Mid", AutoConstants.kAltHeight);
+    height.addOption("Mid", AutoConstants.kAltHeight);
 
     movement.setDefaultOption("Mobility clear side", AutoConstants.kDefaultMovement);
     movement.addOption("Mobility bump side", AutoConstants.kAltDefaultMovement);
@@ -70,7 +70,7 @@ public class Autonomous {
     m_delayStart = delayStart.getDouble(0);
 
     Drivetrain.zeroDriveEncoders();
-    Drivetrain.saveStartingAngle();
+    Drivetrain.Gyro.saveStartingAngle();
     Elevator.zeroEncoders();
     Hand.close();
 
@@ -222,7 +222,7 @@ public class Autonomous {
       } else if (currentStep == 3 && timeElapsed(waitingTimer, baseDelay)) {
         // rotate robot
         if (m_rotation == AutoConstants.kAltRotation) {
-          if (!Drivetrain.facingAngle(Drivetrain.startingAngle180Offset)) Drivetrain.rotateToCorrectAngle(Drivetrain.startingAngle180Offset);
+          if (!Drivetrain.Gyro.facingAngle(Drivetrain.Gyro.startingAngle180Offset)) Drivetrain.rotateToCorrectAngle(Drivetrain.Gyro.startingAngle180Offset);
           else {
             restartWaitingTimer();
             currentStep++;
