@@ -20,7 +20,7 @@ public class Autonomous {
   private static final SendableChooser<String> movement = new SendableChooser<>();
   private static final SendableChooser<String> rotation = new SendableChooser<>();
   private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
-    .withWidget(BuiltInWidgets.kNumberSlider).withSize(2, 1).withPosition(2, 0).getEntry();
+    .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
 
   private static String m_target;
   private static String m_height;
@@ -32,6 +32,7 @@ public class Autonomous {
   private static int superStep = 0; // indicates the current sequence like you are getting mobility after just doing the high cube sequence
 
   private static final double baseDelay = 0.3;
+  private static final double maximumTimePassed = 4;
 
   /**
    * Contains code to be run during robotInit.
@@ -46,7 +47,8 @@ public class Autonomous {
     height.setDefaultOption("High", AutoConstants.kDefaultHeight);
     height.setDefaultOption("Mid", AutoConstants.kAltHeight);
 
-    movement.setDefaultOption("Mobility", AutoConstants.kDefaultMovement);
+    movement.setDefaultOption("Mobility clear side", AutoConstants.kDefaultMovement);
+    movement.addOption("Mobility bump side", AutoConstants.kAltDefaultMovement);
     movement.addOption("Balance", AutoConstants.kAltMovement);
     movement.addOption("None", AutoConstants.kNoMovement);
 
@@ -86,6 +88,10 @@ public class Autonomous {
   private static void moveArm(int thisStep) {
     // deals with target and height
     if (superStep == thisStep) {
+      if (timeElapsed(waitingTimer, maximumTimePassed)) {
+        restartWaitingTimer();
+        currentStep++;
+      }
       if (timeElapsed(waitingTimer, baseDelay)) {
         // wait for the baseDelay amount of time between doing things
         if (currentStep == 0) {
@@ -113,6 +119,7 @@ public class Autonomous {
             case AutoConstants.kDefaultHeight:
               if (!Elevator.armAtHigh()) Elevator.armToHigh();
               else {
+                Elevator.stopMotor();
                 restartWaitingTimer();
                 currentStep++;
               }
@@ -120,6 +127,7 @@ public class Autonomous {
             case AutoConstants.kAltHeight:
               if (!Elevator.armAtMid()) Elevator.armToMid();
               else {
+                Elevator.stopMotor();
                 restartWaitingTimer();
                 currentStep++;
               }
@@ -132,12 +140,14 @@ public class Autonomous {
           currentStep++;
         } else if (currentStep == 3) {
           // retract the arm
-          Elevator.armToRest();
-          restartWaitingTimer();
-          currentStep++;
-        } else if (currentStep == 4) {
-          // close the hand and finish sequence
-          Hand.close();
+          if (!Elevator.armAtRest()) Elevator.armToRest();
+          else {
+            Elevator.stopMotor();
+            restartWaitingTimer();
+            currentStep++;
+          }
+          
+        } else if (currentStep > 3) {
           restartWaitingTimer();
           currentStep = 0;
           superStep++;
@@ -156,6 +166,10 @@ public class Autonomous {
   private static void moveRobot(int thisStep) {
     // deals with robot movement and rotation
     if (superStep == thisStep) {
+      if (timeElapsed(waitingTimer, maximumTimePassed)) {
+        restartWaitingTimer();
+        currentStep++;
+      }
       // wait for the baseDelay amount of time between doing things
       if (currentStep == 0 && timeElapsed(waitingTimer, baseDelay)) {
         // move robot
@@ -172,8 +186,15 @@ public class Autonomous {
               currentStep++;
             }
             break;
+          case AutoConstants.kAltDefaultMovement:
+            if (!Drivetrain.tracksAtPosition(75, 75)) Drivetrain.moveTracksTo(75, 75);
+            else {
+              restartWaitingTimer();
+              currentStep++;
+            }
+            break;
           case AutoConstants.kAltMovement:
-            if (!Drivetrain.tracksAtPosition(41, 41)) Drivetrain.moveTracksTo(41, 41);
+            if (!Drivetrain.tracksAtPosition(40, 40)) Drivetrain.moveTracksTo(40, 40);
             else {
               restartWaitingTimer();
               currentStep++;
@@ -194,8 +215,7 @@ public class Autonomous {
               currentStep++;
             }
             break;
-          case AutoConstants.kAltMovement:
-            // balance maintain robot pos for rest of auto
+          default:
             Drivetrain.maintainRobotPosition();
             break;
         }
@@ -220,6 +240,10 @@ public class Autonomous {
       } else if (currentStep == 5 && timeElapsed(waitingTimer, baseDelay)) {
         // maintain robot pos
         Drivetrain.maintainRobotPosition();
+      } else if (currentStep > 5) {
+        restartWaitingTimer();
+        currentStep = 0;
+        superStep++;
       }
     }
   }

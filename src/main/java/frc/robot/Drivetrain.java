@@ -184,7 +184,7 @@ public class Drivetrain {
   }
 
   /** Align the robot to the center of the target on the limelight. */
-  public static void alignLimelight() {
+  public static void limeAlign() {
     tank(Lime.autoCenter());
   }
 

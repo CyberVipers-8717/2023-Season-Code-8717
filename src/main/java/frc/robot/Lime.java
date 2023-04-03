@@ -2,9 +2,17 @@ package frc.robot;
 
 import java.lang.Math;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class Lime {
+  public static final Timer robotInitTimer = new Timer();
   public static final String[] pipelineNames = {"Reflective tape", "April tags", "Viewing"}; // names to display on dashboard when switching streams
   public static final int maxPipelines = 3; // the number of pipelines that are available to switch through on the limelight
+
+  /** Contains code that will be called when the robot is turned on. */
+  public static void robotInit() {
+    robotInitTimer.start();
+  }
 
   /**
    * @return The name of the currently selected pipeline.

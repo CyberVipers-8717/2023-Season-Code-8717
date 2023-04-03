@@ -9,7 +9,8 @@ public class Constants {
         public static final String kDefaultHeight = "high";
         public static final String kAltHeight = "mid";
 
-        public static final String kDefaultMovement = "taxi";
+        public static final String kDefaultMovement = "taxi clear";
+        public static final String kAltDefaultMovement = "taxi bump";
         public static final String kAltMovement = "balance";
         public static final String kNoMovement = "none";
 
@@ -25,7 +26,7 @@ public class Constants {
         public static final double groundE = 4;
         public static final double quickSP = 13;
         public static final double quickSE = 1.5;
-        public static final double restP = 2;
+        public static final double restP = 5;
         public static final double restE = 1.5;
         // all cube heights
         public static final double highSP = 91.5;
