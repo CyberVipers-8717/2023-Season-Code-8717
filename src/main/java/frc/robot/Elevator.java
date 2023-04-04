@@ -10,10 +10,21 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import frc.robot.Constants.ElevatorConstants;
 
-public class Elevator implements Sendable {
-  private static double currentElevatorTarget;
-  private static double currentPulleyTarget;
-  public static boolean targetingCube = true;
+/*
+ * set arm targets with POV
+ * run arm to targets
+ * 
+ * move arm manually
+ */
+
+public class Elevator /*implements Sendable*/ {
+  public static enum Item {Cube, Cone}
+  public static enum Height {High, Mid, Ground, Rest, Double}
+  public static Item targetItem = Item.Cube;
+  public static Height targetHeight = Height.High;
+  // private static double currentElevatorTarget;
+  // private static double currentPulleyTarget;
+  // public static boolean targetingCube = true;
 
   private static final double manualRotateDownScale = 0.5;
   private static final double manualRotateUpScale = 0.9;
@@ -37,16 +48,16 @@ public class Elevator implements Sendable {
   private static RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
 
   /** Initializes the sendable. */
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Elevator");
-    builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
-    builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
-    builder.addDoubleProperty("Elevator target", Elevator::getCurrentElevatorTarget, null);
-    builder.addDoubleProperty("Pulley target", Elevator::getCurrentPulleyTarget, null);
-    builder.addBooleanProperty("Elevator at target", () -> Elevator.elevatorAtPosition(Elevator.getCurrentElevatorTarget()), null);
-    builder.addBooleanProperty("Pulley at target", () -> Elevator.pulleyAtPosition(Elevator.getCurrentPulleyTarget()), null);
-  }
+  // @Override
+  // public void initSendable(SendableBuilder builder) {
+  //   builder.setSmartDashboardType("Elevator");
+  //   builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
+  //   builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
+  //   builder.addDoubleProperty("Elevator target", Elevator::getCurrentElevatorTarget, null);
+  //   builder.addDoubleProperty("Pulley target", Elevator::getCurrentPulleyTarget, null);
+  //   builder.addBooleanProperty("Elevator at target", () -> Elevator.elevatorAtPosition(Elevator.getCurrentElevatorTarget()), null);
+  //   builder.addBooleanProperty("Pulley at target", () -> Elevator.pulleyAtPosition(Elevator.getCurrentPulleyTarget()), null);
+  // }
 
   /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
@@ -54,100 +65,141 @@ public class Elevator implements Sendable {
       pulleyMotor.setIdleMode(IdleMode.kBrake);
   }
 
+  /**
+   * @return A double array containing the presets for the elevator motors and pulley motor.
+   * They are in the form of double[] {elevatorPreset, pulleyPreset}.
+   */
+  public static double[] getPresets() {
+    if (targetItem == Item.Cube) {
+      switch (targetHeight) {
+        case High:
+          return new double[] {ElevatorConstants.highSE, ElevatorConstants.highSP};
+        case Mid:
+          return new double[] {ElevatorConstants.midSE, ElevatorConstants.midSP};
+        case Ground:
+          return new double[] {ElevatorConstants.groundSE, ElevatorConstants.groundSP};
+        case Rest:
+          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+        case Double:
+          return new double[] {ElevatorConstants.doubleSE, ElevatorConstants.doubleSP};
+        default:
+          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+      }
+    } else {
+      switch (targetHeight) {
+        case High:
+          return new double[] {ElevatorConstants.highTE, ElevatorConstants.highTP};
+        case Mid:
+          return new double[] {ElevatorConstants.midTE, ElevatorConstants.midTP};
+        case Ground:
+          return new double[] {ElevatorConstants.groundTE, ElevatorConstants.groundTP};
+        case Rest:
+          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+        case Double:
+          return new double[] {ElevatorConstants.doubleTE, ElevatorConstants.doubleTP};
+        default:
+          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+      }
+    }
+  }
+
   /** Toggles the current targeted object between cone and cube. */
   public static void toggleTarget() {
-    targetingCube = targetingCube ? false : true;
+    targetItem = targetItem == Item.Cube ? Item.Cone : Item.Cube;
   }
 
-  /**
-   * @return The average encoder position of the two elevator motors.
-   */
-  public static double getElevatorPosition() {
-    return (elevatorEncoderL.getPosition() + elevatorEncoderR.getPosition())/2;
+  public static void targetCube() {
+    targetItem = Item.Cube;
   }
 
-  /**
-   * @return The encoder position of the pulley motor.
-   */
-  public static double getPulleyPosition() {
-    return pulleyEncoder.getPosition();
+  public static void targetCone() {
+    targetItem = Item.Cone;
   }
 
-  /**
-   * Sets the encoder positions of the pulley and elevator to 0.
-   */
-  public static void zeroEncoders() {
-    elevatorEncoderL.setPosition(0);
-    elevatorEncoderR.setPosition(0);
-    pulleyEncoder.setPosition(0);
+  public static void targetHigh() {
+    targetHeight = Height.High;
   }
 
-  /**
-   * Runs the pulley motor to either rotate the arm down or up.
-   * @param speed The speed that the pulley motor will be set to.
-   */
-  private static void runPulley(double speed) {
-    pulleyMotor.set(speed);
+  public static void targetMid() {
+    targetHeight = Height.Mid;
   }
 
-  /** Rotates the arm down at the manual rotation down speed. */
-  public static void rotateDown() {
-    runPulley(manualRotateDownScale);
+  public static void targetGround() {
+    targetHeight = Height.Ground;
   }
 
-  /** Rotates the arm up at the manual rotation up speed. */
-  public static void rotateUp() {
-    runPulley(-manualRotateUpScale);
+  public static void targetRest() {
+    targetHeight = Height.Rest;
   }
 
-  /**
-   * Runs the elevator motors to either extend or retract the elevator.
-   * @param speed The speed that the elevator motors will bet set to.
-   */
-  private static void runElevator(double speed) {
-    elevatorMotors.set(speed);
+  public static void targetDouble() {
+    targetHeight = Height.Double;
   }
 
   /** Extends the elevator at the manual extension speed. */
   public static void extend() {
-    runElevator(manualExtendScale);
+    elevatorMotors.set(manualExtendScale);
   }
 
   /** Retracts the elevator at the manual extension speed. */
   public static void retract() {
-    runElevator(-manualRetractScale);
+    elevatorMotors.set(-manualRetractScale);
+  }
+
+  /** Rotates the arm down at the manual rotation down speed. */
+  public static void rotateDown() {
+    pulleyMotor.set(manualRotateDownScale);
+  }
+
+  /** Rotates the arm up at the manual rotation up speed. */
+  public static void rotateUp() {
+    pulleyMotor.set(-manualRotateUpScale);
+  }
+
+  private static void elevatorTo(double target) {
+    Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
+  }
+
+  private static void pulleyTo(double target) {
+    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
+  }
+
+  public static void runArm() {
+    
+    // run elevator
+    // run pulley
+  }
+
+  private static void armTo(double elevatorTarget, double pulleyTarget) {
+    
+  }
+
+  private static void armTo(Height target) {
+
   }
 
   /**
    * Rotates the arm to the specified encoder position.
    * @param target The encoder position that the pulley motor will run to match.
    */
-  public static void pulleyTo(double target) {
-    Elevator.currentElevatorTarget = target;
-    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
-  }
-
-  /**
-   * @return The current target encoder position of the pulley motor.
-   */
-  public static double getCurrentPulleyTarget() {
-    return Elevator.currentPulleyTarget;
+  private static void pulleyToPos(double target) {
+    
   }
 
   /**
    * Extends, or retracts, the elevator to the specified encoder position.
    * @param target The encoder position that the elevator motors will run to match.
    */
-  public static void elevatorTo(double target) {
-    Elevator.currentPulleyTarget = target;
-    Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
+  private static void elevatorToPos(double target) {
+    
   }
 
-  /**
-   * @return The current target encoder position of the elevator motors.
-   */
-  public static double getCurrentElevatorTarget() {
-    return Elevator.currentElevatorTarget;
+  public static void pulleyTo(Height target) {
+    pulleyTo(targetItem == Item.Cube ? ElevatorConstants.highSP : ElevatorConstants.highTP);
+  }
+
+  public static void elevatorTo(Height target) {
+    elevatorTo(targetItem == Item.Cube ? ElevatorConstants.highSE : ElevatorConstants.highTE);
   }
 
   /**
@@ -168,6 +220,10 @@ public class Elevator implements Sendable {
     return Robot.motorAtTarget(target, getElevatorPosition(), minimumElevatorDifference);
   }
 
+  public static boolean pulleyAtPosition(double target) {
+    return Robot.motorAtTarget(target, getPulleyPosition(), minimumPulleyDifference);
+  }
+
   /**
    * Wrapper method that rotates the arm and runs the elevator to the specified encoder positions.
    * @param targetPulley The encoder position that the pulley motor will run to.
@@ -176,6 +232,17 @@ public class Elevator implements Sendable {
   public static void armTo(double targetPulley, double targetElevator) {
     pulleyTo(targetPulley);
     elevatorTo(targetElevator);
+  }
+
+  public static void armTo(double[] targets) {
+    pulleyTo(targets[0]);
+    elevatorTo(targets[1]);
+  }
+
+  public static void armTo(Height target) {
+    targetHeight = target;
+    armTo(getPresets());
+    
   }
 
   /**
@@ -249,18 +316,45 @@ public class Elevator implements Sendable {
   public static void handlePOV(int pov) {
     switch (pov) {
       case 0: // up
-        armToHigh();
+        targetHigh();
+        runArm();
         break;
       case 90: // right
-        armToMid();
+        targetMid();
+        runArm();
         break;
       case 180: // down
-        armToDouble();
+        targetDouble();
+        runArm();
         break;
       case 270: // left
-        armToRest();
+        targetRest();
+        runArm();
         break;
     }
+  }
+
+  /**
+   * @return The average encoder position of the two elevator motors.
+   */
+  public static double getElevatorPosition() {
+    return (elevatorEncoderL.getPosition() + elevatorEncoderR.getPosition())/2;
+  }
+
+  /**
+   * @return The encoder position of the pulley motor.
+   */
+  public static double getPulleyPosition() {
+    return pulleyEncoder.getPosition();
+  }
+
+  /**
+   * Sets the encoder positions of the pulley and elevator to 0.
+   */
+  public static void zeroEncoders() {
+    elevatorEncoderL.setPosition(0);
+    elevatorEncoderR.setPosition(0);
+    pulleyEncoder.setPosition(0);
   }
 
   /** Calls the stopMotor method of the elevator motors. */

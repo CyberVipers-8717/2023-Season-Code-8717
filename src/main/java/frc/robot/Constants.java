@@ -22,8 +22,10 @@ public class Constants {
         // P indicates pulley (arm rotation)
         // S indicates cube (Sqaure)
         // T indicates cone (Triangle)
-        public static final double groundP = 210;
-        public static final double groundE = 4;
+        public static final double groundSP = 210;
+        public static final double groundSE = 4;
+        public static final double groundTP = 210;
+        public static final double groundTE = 4;
         public static final double quickSP = 13;
         public static final double quickSE = 1.5;
         public static final double restP = 5;
