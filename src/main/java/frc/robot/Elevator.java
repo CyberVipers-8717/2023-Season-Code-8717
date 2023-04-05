@@ -30,8 +30,12 @@ public class Elevator implements Sendable {
     builder.setSmartDashboardType("Elevator");
     builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
     builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
-    builder.addStringProperty("Elevator target name", ElevatorPresets::getNameOfHeight, null);
-    builder.addDoubleArrayProperty("Elevator target values", ElevatorPresets::getTargetPresets, null);
+    builder.addStringProperty("Target name", ElevatorPresets::getNameOfHeight, null);
+    builder.addDoubleArrayProperty("Target values", ElevatorPresets::getTargetPresets, null);
+    builder.addBooleanArrayProperty("At target", () -> {
+      double[] targets = ElevatorPresets.getTargetPresets();
+      return new boolean[] {elevatorAtPos(targets[0]), pulleyAtPos(targets[1])};
+    }, null);
   }
 
   /** Contains code that will be called when the robot is turned on. */
