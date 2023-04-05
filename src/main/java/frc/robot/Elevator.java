@@ -26,17 +26,7 @@ public class Elevator /*implements Sendable*/ {
   // private static double currentPulleyTarget;
   // public static boolean targetingCube = true;
 
-  private static final double manualRotateDownScale = 0.5;
-  private static final double manualRotateUpScale = 0.9;
-  private static final double manualExtendScale = 0.35;
-  private static final double manualRetractScale = 0.3;
-
-  private static final double minimumElevatorDifference = 0.5;
-  private static final double minimumPulleyDifference = 0.5;
-  private static final double whenToScaleElevatorCommand = 15;
-  private static final double whenToScalePulleyCommand = 25;
-  private static final double maximumElevatorCommand = 0.85;
-  private static final double maximumPulleyCommand = 0.85;
+  
 
   private static CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
   private static CANSparkMax elevatorMotorR = new CANSparkMax(7, MotorType.kBrushless);
@@ -108,60 +98,90 @@ public class Elevator /*implements Sendable*/ {
     targetItem = targetItem == Item.Cube ? Item.Cone : Item.Cube;
   }
 
+  /** Sets the current target object to a cube. */
   public static void targetCube() {
     targetItem = Item.Cube;
   }
 
+  /** Sets the current target object to a cone. */
   public static void targetCone() {
     targetItem = Item.Cone;
   }
 
+  /** Sets the current target height to high grid. */
   public static void targetHigh() {
     targetHeight = Height.High;
   }
 
+  /** Sets the current target height to mid grid. */
   public static void targetMid() {
     targetHeight = Height.Mid;
   }
 
+  /** Sets the current target height to ground. */
   public static void targetGround() {
     targetHeight = Height.Ground;
   }
 
+  /** Sets the current target height to rest. */
   public static void targetRest() {
     targetHeight = Height.Rest;
   }
 
+  /** Sets the current target height to double player station. */
   public static void targetDouble() {
     targetHeight = Height.Double;
   }
 
+  private static final double manuExtend = 0.4;
   /** Extends the elevator at the manual extension speed. */
   public static void extend() {
-    elevatorMotors.set(manualExtendScale);
+    elevatorMotors.set(manuExtend);
   }
 
+  private static final double manuRetract = 0.3;
   /** Retracts the elevator at the manual extension speed. */
   public static void retract() {
-    elevatorMotors.set(-manualRetractScale);
+    elevatorMotors.set(-manuRetract);
   }
 
+  private static final double manuRotDown = 0.5;
   /** Rotates the arm down at the manual rotation down speed. */
   public static void rotateDown() {
-    pulleyMotor.set(manualRotateDownScale);
+    pulleyMotor.set(manuRotDown);
   }
 
+  private static final double manuRotUp = 0.9;
   /** Rotates the arm up at the manual rotation up speed. */
   public static void rotateUp() {
-    pulleyMotor.set(-manualRotateUpScale);
+    pulleyMotor.set(-manuRotUp);
   }
+
+  private static final double minEleDiff = 0.5;
+  // the minimum difference in the current elevator encoder position and the target one to begin moving the motor
+  private static final double whenEleCom = 15;
+  // the encoder difference to begin scaling the command down so as not to overshoot the target
+  private static final double maxEleCom = 0.85;
+  // the maximum command that can be given
 
   private static void elevatorTo(double target) {
-    Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minimumElevatorDifference, maximumElevatorCommand, whenToScaleElevatorCommand);
+    Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minEleDiff, maxEleCom, whenEleCom);
   }
 
+  private static final double minPulDiff = 0.5;
+  // the minimum difference in the current pulley encoder position and the target one to begin moving the motor
+  private static final double whenPulCom = 25;
+  // the encoder difference to begin scaling the command down so as not to overshoot the target
+  private static final double maxPulCom = 0.85;
+  // the maximum command that can be given
+
   private static void pulleyTo(double target) {
-    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minimumPulleyDifference, maximumPulleyCommand, whenToScalePulleyCommand);
+    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minPulDiff, maxPulCom, whenPulCom);
+  }
+  
+  public static void armTo(double elevatorTarget, double pulleyTarget) {
+    elevatorTo(elevatorTarget);
+    pulleyTo(pulleyTarget);
   }
 
   public static void runArm() {
