@@ -9,16 +9,11 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-public class Elevator /*implements Sendable*/ {
+public class Elevator implements Sendable {
   public static enum Item {Cube, Cone}
   public static enum Height {High, Mid, Ground, Rest, Double}
   public static Item targetItem = Item.Cube;
   public static Height targetHeight = Height.High;
-  // private static double currentElevatorTarget;
-  // private static double currentPulleyTarget;
-  // public static boolean targetingCube = true;
-
-  
 
   private static CANSparkMax elevatorMotorL = new CANSparkMax(6, MotorType.kBrushless);
   private static CANSparkMax elevatorMotorR = new CANSparkMax(7, MotorType.kBrushless);
@@ -30,16 +25,14 @@ public class Elevator /*implements Sendable*/ {
   private static RelativeEncoder elevatorEncoderR = elevatorMotorR.getEncoder();
 
   /** Initializes the sendable. */
-  // @Override
-  // public void initSendable(SendableBuilder builder) {
-  //   builder.setSmartDashboardType("Elevator");
-  //   builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
-  //   builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
-  //   builder.addDoubleProperty("Elevator target", Elevator::getCurrentElevatorTarget, null);
-  //   builder.addDoubleProperty("Pulley target", Elevator::getCurrentPulleyTarget, null);
-  //   builder.addBooleanProperty("Elevator at target", () -> Elevator.elevatorAtPosition(Elevator.getCurrentElevatorTarget()), null);
-  //   builder.addBooleanProperty("Pulley at target", () -> Elevator.pulleyAtPosition(Elevator.getCurrentPulleyTarget()), null);
-  // }
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("Elevator");
+    builder.addDoubleProperty("Elevator position", Elevator::getElevatorPosition, null);
+    builder.addDoubleProperty("Pulley position", Elevator::getPulleyPosition, null);
+    builder.addStringProperty("Elevator target name", ElevatorPresets::getNameOfHeight, null);
+    builder.addDoubleArrayProperty("Elevator target values", ElevatorPresets::getTargetPresets, null);
+  }
 
   /** Contains code that will be called when the robot is turned on. */
   public static void robotInit() {
