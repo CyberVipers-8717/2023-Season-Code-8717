@@ -40,4 +40,38 @@ public class ElevatorPresets {
       }
     }
   }
+
+  /**
+   * @return A string representation of the current target item.
+   */
+  public static String getNameOfItem() {
+    switch (Elevator.targetItem) {
+      case Cube:
+        return "Cube";
+      case Cone:
+        return "Cone";
+      default:
+        return "Cube";
+    }
+  }
+
+  /**
+   * @return A string representation of the current target height.
+   */
+  public static String getNameOfHeight() {
+    switch (Elevator.targetHeight) {
+      case High:
+        return "High";
+      case Mid:
+        return "Mid";
+      case Ground:
+        return "Ground";
+      case Rest:
+        return "Rest";
+      case Double:
+        return "Double";
+      default:
+        return "Rest";
+    }
+  }
 }
