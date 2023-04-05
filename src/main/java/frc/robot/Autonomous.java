@@ -22,8 +22,6 @@ public class Autonomous {
   private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
   .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
 
-  private static String m_target;
-  private static String m_height;
   private static String m_movement;
   private static String m_rotation;
   private static double m_delayStart;
@@ -63,8 +61,48 @@ public class Autonomous {
 
   /** Contains code that is run in autonomousInit. */
   public static void init() {
-    m_target = target.getSelected();
-    m_height = height.getSelected();
+    // target object
+    switch (target.getSelected()) {
+      case AutoConstants.kDefaultTarget:
+        Elevator.targetCube();
+        break;
+      case AutoConstants.kAltTarget:
+        Elevator.targetCone();
+        break;
+      case AutoConstants.kNoTarget:
+        Elevator.targetItem = Elevator.Item.None;
+        break;
+      default:
+        Elevator.targetCube();
+        break;
+    }
+    // target height
+    switch (height.getSelected()) {
+      case AutoConstants.kDefaultHeight:
+        Elevator.targetHigh();
+        break;
+      case AutoConstants.kAltHeight:
+        Elevator.targetMid();
+        break;
+      default:
+        Elevator.targetHigh();
+        break;
+    }
+    // drivetrain movement
+    // todo
+    // switch (movement.getSelected()) {
+    //   case AutoConstants.kDefaultMovement:
+    //     break;
+    //   case AutoConstants.kAltDefaultMovement:
+    //     break;
+    //   case AutoConstants.kAltMovement:
+    //     break;
+    //   case AutoConstants.kNoMovement:
+    //     break;
+    //   default:
+    //     // no movement
+    //     break;
+    // }
     m_movement = movement.getSelected();
     m_rotation = rotation.getSelected();
     m_delayStart = delayStart.getDouble(0);
@@ -95,34 +133,16 @@ public class Autonomous {
       if (timeElapsed(waitingTimer, baseDelay)) {
         // wait for the baseDelay amount of time between doing things
         if (currentStep == 0) {
-          // manage the target
-          switch(m_target) {
-            case AutoConstants.kNoTarget:
-              // if we have no target move on to next sequence
-              currentStep = 0;
-              superStep++;
-              break;
-            case AutoConstants.kDefaultTarget:
-              Elevator.targetCube();
-              currentStep++;
-              restartWaitingTimer();
-              break;
-            case AutoConstants.kAltTarget:
-              Elevator.targetCone();
-              currentStep++;
-              restartWaitingTimer();
-              break;
+          // if we have no target move on to next sequence
+          if (Elevator.targetItem == Elevator.Item.None) {
+            currentStep = 0;
+            superStep++;
+          } else {
+            currentStep++;
+            restartWaitingTimer();
           }
         } else if (currentStep == 1) {
           // move the arm
-          switch(m_height) {
-            case AutoConstants.kDefaultHeight:
-              Elevator.targetHigh();
-              break;
-            case AutoConstants.kAltHeight:
-              Elevator.targetMid();
-              break;
-          }
           if (!Elevator.armAtTargets()) Elevator.runArm();
           else {
             Elevator.stopMotor();
