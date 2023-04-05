@@ -10,7 +10,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
 public class Elevator implements Sendable {
-  public static enum Item {Cube, Cone}
+  public static enum Item {Cube, Cone, None}
   public static enum Height {High, Mid, Ground, Rest, Double}
   public static Item targetItem = Item.Cube;
   public static Height targetHeight = Height.High;
