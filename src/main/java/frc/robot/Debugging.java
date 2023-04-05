@@ -7,7 +7,7 @@ public class Debugging {
     public static final ShuffleboardTab DebugTab = Shuffleboard.getTab("Debugging");
 
     public static void robotInit() {
-        //DebugTab.add("Elevator Info", new Elevator());
+        DebugTab.add("Elevator Info", new Elevator());
         DebugTab.add("Drivetrain Info", new Drivetrain());
         DebugTab.add("Gyro Info", new Drivetrain.Gyro());
     }
