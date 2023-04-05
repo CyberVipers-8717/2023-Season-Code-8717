@@ -103,12 +103,12 @@ public class Autonomous {
               superStep++;
               break;
             case AutoConstants.kDefaultTarget:
-              Elevator.targetingCube = true;
+              Elevator.targetCube();
               currentStep++;
               restartWaitingTimer();
               break;
             case AutoConstants.kAltTarget:
-              Elevator.targetingCube = false;
+              Elevator.targetCone();
               currentStep++;
               restartWaitingTimer();
               break;
@@ -117,21 +117,17 @@ public class Autonomous {
           // move the arm
           switch(m_height) {
             case AutoConstants.kDefaultHeight:
-              if (!Elevator.armAtHigh()) Elevator.armToHigh();
-              else {
-                Elevator.stopMotor();
-                restartWaitingTimer();
-                currentStep++;
-              }
+              Elevator.targetHigh();
               break;
             case AutoConstants.kAltHeight:
-              if (!Elevator.armAtMid()) Elevator.armToMid();
-              else {
-                Elevator.stopMotor();
-                restartWaitingTimer();
-                currentStep++;
-              }
+              Elevator.targetMid();
               break;
+          }
+          if (!Elevator.armAtTargets()) Elevator.runArm();
+          else {
+            Elevator.stopMotor();
+            restartWaitingTimer();
+            currentStep++;
           }
         } else if (currentStep == 2) {
           // open the hand
@@ -140,13 +136,13 @@ public class Autonomous {
           currentStep++;
         } else if (currentStep == 3) {
           // retract the arm
-          if (!Elevator.armAtRest()) Elevator.armToRest();
+          Elevator.targetRest();
+          if (!Elevator.armAtTargets()) Elevator.runArm();
           else {
             Elevator.stopMotor();
             restartWaitingTimer();
             currentStep++;
           }
-          
         } else if (currentStep > 3) {
           restartWaitingTimer();
           currentStep = 0;

@@ -8,14 +8,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import frc.robot.Constants.ElevatorConstants;
-
-/*
- * set arm targets with POV
- * run arm to targets
- * 
- * move arm manually
- */
 
 public class Elevator /*implements Sendable*/ {
   public static enum Item {Cube, Cone}
@@ -53,44 +45,6 @@ public class Elevator /*implements Sendable*/ {
   public static void robotInit() {
       elevatorMotorL.setInverted(true);
       pulleyMotor.setIdleMode(IdleMode.kBrake);
-  }
-
-  /**
-   * @return A double array containing the presets for the elevator motors and pulley motor.
-   * They are in the form of double[] {elevatorPreset, pulleyPreset}.
-   */
-  public static double[] getPresets() {
-    if (targetItem == Item.Cube) {
-      switch (targetHeight) {
-        case High:
-          return new double[] {ElevatorConstants.highSE, ElevatorConstants.highSP};
-        case Mid:
-          return new double[] {ElevatorConstants.midSE, ElevatorConstants.midSP};
-        case Ground:
-          return new double[] {ElevatorConstants.groundSE, ElevatorConstants.groundSP};
-        case Rest:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
-        case Double:
-          return new double[] {ElevatorConstants.doubleSE, ElevatorConstants.doubleSP};
-        default:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
-      }
-    } else {
-      switch (targetHeight) {
-        case High:
-          return new double[] {ElevatorConstants.highTE, ElevatorConstants.highTP};
-        case Mid:
-          return new double[] {ElevatorConstants.midTE, ElevatorConstants.midTP};
-        case Ground:
-          return new double[] {ElevatorConstants.groundTE, ElevatorConstants.groundTP};
-        case Rest:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
-        case Double:
-          return new double[] {ElevatorConstants.doubleTE, ElevatorConstants.doubleTP};
-        default:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
-      }
-    }
   }
 
   /** Toggles the current targeted object between cone and cube. */
@@ -164,6 +118,10 @@ public class Elevator /*implements Sendable*/ {
   private static final double maxEleCom = 0.85;
   // the maximum command that can be given
 
+  /**
+   * Runs the elevator motors until their encoder positions match the target encoder position.
+   * @param target A double indicating the target encoder position of the elevator motors.
+   */
   private static void elevatorTo(double target) {
     Robot.moveMotorTo(target, getElevatorPosition(), elevatorMotors, minEleDiff, maxEleCom, whenEleCom);
   }
@@ -175,157 +133,82 @@ public class Elevator /*implements Sendable*/ {
   private static final double maxPulCom = 0.85;
   // the maximum command that can be given
 
+  /**
+   * Runs the pulley motor until its encoder position matches the target encoder position.
+   * @param target A double indicating the target encoder position of the pulley motor.
+   */
   private static void pulleyTo(double target) {
     Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minPulDiff, maxPulCom, whenPulCom);
   }
   
+  /**
+   * Runs the elevator and pulley motors until they match the target encoder positions.
+   * @param elevatorTarget A double indicating the target encoder position of the elevator motors.
+   * @param pulleyTarget A double indicating the target encoder position of the pulley motor.
+   */
   public static void armTo(double elevatorTarget, double pulleyTarget) {
     elevatorTo(elevatorTarget);
     pulleyTo(pulleyTarget);
   }
 
+  /**
+   * Wrapper method that calls the armTo(double double) method given a double array.
+   * @param targets A double array indicating the target elevator and pulley encoder positions.
+   * The array is in the form of double[] {elevatorTarget, pulleyTarget}.
+   */
+  private static void armTo(double[] targets) {
+    elevatorTo(targets[0]);
+    pulleyTo(targets[1]);
+  }
+
+  /** Runs the elevator and pulley motors to the saved target height and object presets. */
   public static void runArm() {
-    
-    // run elevator
-    // run pulley
-  }
-
-  private static void armTo(double elevatorTarget, double pulleyTarget) {
-    
-  }
-
-  private static void armTo(Height target) {
-
-  }
-
-  /**
-   * Rotates the arm to the specified encoder position.
-   * @param target The encoder position that the pulley motor will run to match.
-   */
-  private static void pulleyToPos(double target) {
-    
-  }
-
-  /**
-   * Extends, or retracts, the elevator to the specified encoder position.
-   * @param target The encoder position that the elevator motors will run to match.
-   */
-  private static void elevatorToPos(double target) {
-    
-  }
-
-  public static void pulleyTo(Height target) {
-    pulleyTo(targetItem == Item.Cube ? ElevatorConstants.highSP : ElevatorConstants.highTP);
-  }
-
-  public static void elevatorTo(Height target) {
-    elevatorTo(targetItem == Item.Cube ? ElevatorConstants.highSE : ElevatorConstants.highTE);
-  }
-
-  /**
-   * Calculates if the pulley motor is at the target encoder position.
-   * @param target The encoder position that the pulley motor will run to match.
-   * @return A boolean indicating whether the pulley motor is at its target encoder position.
-   */
-  public static boolean pulleyAtPosition(double target) {
-    return Robot.motorAtTarget(target, getPulleyPosition(), minimumPulleyDifference);
+    armTo(ElevatorPresets.getTargetPresets());
   }
 
   /**
    * Calculates if the elevator motors are at the target encoder position.
-   * @param target The encoder position that the elevator motors will run to match.
-   * @return A boolean indicating whether the elevator motors are at the target encoder position.
+   * @param target A double indicating the target encoder position of the elevator motors.
+   * @return A boolean indicating if the elevator motors are at an acceptable distance from the target encoder position.
    */
-  public static boolean elevatorAtPosition(double target) {
-    return Robot.motorAtTarget(target, getElevatorPosition(), minimumElevatorDifference);
-  }
-
-  public static boolean pulleyAtPosition(double target) {
-    return Robot.motorAtTarget(target, getPulleyPosition(), minimumPulleyDifference);
+  private static boolean elevatorAtPos(double target) {
+    return Robot.motorAtTarget(target, getElevatorPosition(), minEleDiff);
   }
 
   /**
-   * Wrapper method that rotates the arm and runs the elevator to the specified encoder positions.
-   * @param targetPulley The encoder position that the pulley motor will run to.
-   * @param targetElevator The encoder position that the elevator motors will run to.
+   * Calculates if the pulley motor is at the target encoder position.
+   * @param target A double indicating the target encoder position of the pulley motor.
+   * @return A boolean indicating if the pulley motor is at an acceptable distance from the target encoder position.
    */
-  public static void armTo(double targetPulley, double targetElevator) {
-    pulleyTo(targetPulley);
-    elevatorTo(targetElevator);
-  }
-
-  public static void armTo(double[] targets) {
-    pulleyTo(targets[0]);
-    elevatorTo(targets[1]);
-  }
-
-  public static void armTo(Height target) {
-    targetHeight = target;
-    armTo(getPresets());
-    
+  private static boolean pulleyAtPos(double target) {
+    return Robot.motorAtTarget(target, getPulleyPosition(), minPulDiff);
   }
 
   /**
-   * @param targetPulley The encoder position that the pulley motor will run to.
-   * @param targetElevator The encoder position that the elevator motors will run to.
-   * @return A boolean indicating if both the elevator and pulley motors are at the specified encoder positions.
+   * Calculates if the elevator and pulley motors are at the target encoder positions.
+   * @param elevatorTarget A double indicating the target encoder position of the elevator motors.
+   * @param pulleyTarget A double indicating the target encoder position of the pulley motor.
+   * @return A boolean indicating if the elevator and pulley motors are at an acceptable distance from the target encoder positions.
    */
-  public static boolean armAtPosition(double targetPulley, double targetElevator) {
-    return pulleyAtPosition(targetPulley) && elevatorAtPosition(targetElevator);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
-  public static void armToHigh() {
-    if (targetingCube) armTo(ElevatorConstants.highSP, ElevatorConstants.highSE);
-    else armTo(ElevatorConstants.highTP, ElevatorConstants.highTE);
+  private static boolean armAtPos(double elevatorTarget, double pulleyTarget) {
+    return elevatorAtPos(elevatorTarget) && pulleyAtPos(pulleyTarget);
   }
 
   /**
-   * @return A boolean indicating if both the elevator and pulley are at high grid.
+   * Wrapper method that calls the armAtPos(double double) method given a double array.
+   * @param targets A double array indicating the target elevator and pulley encoder positions.
+   * The array is in the form of double[] {elevatorTarget, pulleyTarget}.
+   * @return A boolean indicating if the elevator and pulley motors are at an acceptable distance from the target encoder positions.
    */
-  public static boolean armAtHigh() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.highSP, ElevatorConstants.highSE);
-    else return armAtPosition(ElevatorConstants.highTP, ElevatorConstants.highTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the mid grid position. */
-  public static void armToMid() {
-    if (targetingCube) armTo(ElevatorConstants.midSP, ElevatorConstants.midSE);
-    else armTo(ElevatorConstants.midTP, ElevatorConstants.midTE);
+  private static boolean armAtPos(double[] targets) {
+    return armAtPos(targets[0], targets[1]);
   }
 
   /**
-   * @return A boolean indicating if both the elevator and pulley are at mid grid.
+   * @return A boolean indicating if the elevator and pulley motors are at the saved target height and object presets.
    */
-  public static boolean armAtMid() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.midSP, ElevatorConstants.midSE);
-    else return armAtPosition(ElevatorConstants.midTP, ElevatorConstants.midTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the double player station. */
-  public static void armToDouble() {
-    if (targetingCube) armTo(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
-    else armTo(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
-  }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at double player station.
-   */
-  public static boolean armAtDouble() {
-    if (targetingCube) return armAtPosition(ElevatorConstants.doubleSP, ElevatorConstants.doubleSE);
-    else return armAtPosition(ElevatorConstants.doubleTP, ElevatorConstants.doubleTE);
-  }
-
-  /** Wrapper method that rotates the arm and runs the elevator to the high grid position. */
-  public static void armToRest() {
-    armTo(ElevatorConstants.restP, ElevatorConstants.restE);
-  }
-
-  /**
-   * @return A boolean indicating if both the elevator and pulley are at resting position.
-   */
-  public static boolean armAtRest() {
-    return armAtPosition(ElevatorConstants.restP, ElevatorConstants.restE);
+  public static boolean armAtTargets() {
+    return armAtPos(ElevatorPresets.getTargetPresets());
   }
 
   /**
@@ -337,21 +220,18 @@ public class Elevator /*implements Sendable*/ {
     switch (pov) {
       case 0: // up
         targetHigh();
-        runArm();
         break;
       case 90: // right
         targetMid();
-        runArm();
         break;
       case 180: // down
         targetDouble();
-        runArm();
         break;
       case 270: // left
         targetRest();
-        runArm();
         break;
     }
+    runArm();
   }
 
   /**
