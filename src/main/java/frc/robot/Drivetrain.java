@@ -49,7 +49,7 @@ public class Drivetrain implements Sendable {
     /** Initializes the sendable. */
     @Override
     public void initSendable(SendableBuilder builder) {
-      builder.setSmartDashboardType("CustomGyro");
+      //builder.setSmartDashboardType("CustomGyro");
       builder.addDoubleProperty("Starting angle", () -> Gyro.startingAngle, null);
       builder.addDoubleProperty("Current angle", Gyro::getAngle, null);
       builder.addDoubleProperty("Angle target", () -> Gyro.currentAngleTarget, null);
@@ -102,7 +102,7 @@ public class Drivetrain implements Sendable {
   /** Initializes the sendable. */
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Drivetrain");
+    //builder.setSmartDashboardType("Drivetrain");
     builder.addDoubleProperty("Left position", Drivetrain::getLeftPosition, null);
     builder.addDoubleProperty("Right position", Drivetrain::getRightPosition, null);
     builder.addDoubleProperty("Left target", () -> Drivetrain.currentLeftTarget, null);
