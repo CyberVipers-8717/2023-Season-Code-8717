@@ -9,6 +9,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 
+/*
+ * Todo
+ *    Refactor the drivetrain code to just simply be better
+ *    make it built different
+ */
+
 public class Autonomous {
   private static final Timer delayTimer = new Timer();
   private static final Timer waitingTimer = new Timer();
@@ -22,8 +28,6 @@ public class Autonomous {
   private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
   .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
 
-  private static String m_target;
-  private static String m_height;
   private static String m_movement;
   private static String m_rotation;
   private static double m_delayStart;
@@ -40,12 +44,12 @@ public class Autonomous {
    * Each chooser is a {@link SendableChooser} with the start delay being a number slider.
    */
   public static void robotInit() {
-    target.setDefaultOption("Cube", AutoConstants.kDefaultTarget);
-    target.addOption("Cone", AutoConstants.kAltTarget);
+    target.setDefaultOption("Cube", AutoConstants.kTargetOne);
+    target.addOption("Cone", AutoConstants.kTargetTwo);
     target.addOption("None", AutoConstants.kNoTarget);
 
-    height.setDefaultOption("High", AutoConstants.kDefaultHeight);
-    height.addOption("Mid", AutoConstants.kAltHeight);
+    height.setDefaultOption("High", AutoConstants.kHeightOne);
+    height.addOption("Mid", AutoConstants.kHeightTwo);
 
     movement.setDefaultOption("Mobility clear side", AutoConstants.kDefaultMovement);
     movement.addOption("Mobility bump side", AutoConstants.kAltDefaultMovement);
@@ -63,8 +67,47 @@ public class Autonomous {
 
   /** Contains code that is run in autonomousInit. */
   public static void init() {
-    m_target = target.getSelected();
-    m_height = height.getSelected();
+    // target object
+    switch (target.getSelected()) {
+      case AutoConstants.kTargetOne:
+        Elevator.targetCube();
+        break;
+      case AutoConstants.kTargetTwo:
+        Elevator.targetCone();
+        break;
+      case AutoConstants.kNoTarget:
+        Elevator.targetItem = Elevator.Item.None;
+        break;
+      default:
+        Elevator.targetCube();
+        break;
+    }
+    // target height
+    switch (height.getSelected()) {
+      case AutoConstants.kHeightOne:
+        Elevator.targetHigh();
+        break;
+      case AutoConstants.kHeightTwo:
+        Elevator.targetMid();
+        break;
+      default:
+        Elevator.targetHigh();
+        break;
+    }
+    // drivetrain movement
+    // switch (movement.getSelected()) {
+    //   case AutoConstants.kDefaultMovement:
+    //     break;
+    //   case AutoConstants.kAltDefaultMovement:
+    //     break;
+    //   case AutoConstants.kAltMovement:
+    //     break;
+    //   case AutoConstants.kNoMovement:
+    //     break;
+    //   default:
+    //     // no movement
+    //     break;
+    // }
     m_movement = movement.getSelected();
     m_rotation = rotation.getSelected();
     m_delayStart = delayStart.getDouble(0);
@@ -95,43 +138,21 @@ public class Autonomous {
       if (timeElapsed(waitingTimer, baseDelay)) {
         // wait for the baseDelay amount of time between doing things
         if (currentStep == 0) {
-          // manage the target
-          switch(m_target) {
-            case AutoConstants.kNoTarget:
-              // if we have no target move on to next sequence
-              currentStep = 0;
-              superStep++;
-              break;
-            case AutoConstants.kDefaultTarget:
-              Elevator.targetingCube = true;
-              currentStep++;
-              restartWaitingTimer();
-              break;
-            case AutoConstants.kAltTarget:
-              Elevator.targetingCube = false;
-              currentStep++;
-              restartWaitingTimer();
-              break;
+          // if we have no target move on to next sequence
+          if (Elevator.targetItem == Elevator.Item.None) {
+            currentStep = 0;
+            superStep++;
+          } else {
+            currentStep++;
+            restartWaitingTimer();
           }
         } else if (currentStep == 1) {
           // move the arm
-          switch(m_height) {
-            case AutoConstants.kDefaultHeight:
-              if (!Elevator.armAtHigh()) Elevator.armToHigh();
-              else {
-                Elevator.stopMotor();
-                restartWaitingTimer();
-                currentStep++;
-              }
-              break;
-            case AutoConstants.kAltHeight:
-              if (!Elevator.armAtMid()) Elevator.armToMid();
-              else {
-                Elevator.stopMotor();
-                restartWaitingTimer();
-                currentStep++;
-              }
-              break;
+          if (!Elevator.armAtTargets()) Elevator.runArm();
+          else {
+            Elevator.stopMotor();
+            restartWaitingTimer();
+            currentStep++;
           }
         } else if (currentStep == 2) {
           // open the hand
@@ -140,13 +161,13 @@ public class Autonomous {
           currentStep++;
         } else if (currentStep == 3) {
           // retract the arm
-          if (!Elevator.armAtRest()) Elevator.armToRest();
+          Elevator.targetRest();
+          if (!Elevator.armAtTargets()) Elevator.runArm();
           else {
             Elevator.stopMotor();
             restartWaitingTimer();
             currentStep++;
           }
-          
         } else if (currentStep > 3) {
           restartWaitingTimer();
           currentStep = 0;

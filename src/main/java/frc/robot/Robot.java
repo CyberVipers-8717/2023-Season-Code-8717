@@ -35,8 +35,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Joystick", !Drivetrain.usingController);
     SmartDashboard.putBoolean("Hard Braking", Drivetrain.getDriveIdle()==IdleMode.kBrake);
-    SmartDashboard.putBoolean("Targeting Cube", Elevator.targetingCube);
-    SmartDashboard.putBoolean("Targeting Cone", !Elevator.targetingCube);
+    SmartDashboard.putBoolean("Targeting Cube", Elevator.targetItem == Elevator.Item.Cube);
+    SmartDashboard.putBoolean("Targeting Cone", Elevator.targetItem == Elevator.Item.Cone);
     SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
 
     // lime auto april tag
@@ -63,11 +63,16 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     Drivetrain.usingController = false;
+    Elevator.targetCube();
+    ElevatorPresets.loadPreferences();
   }
 
   @Override
   public void teleopPeriodic() {
     Drivetrain.feed();
+
+    // reset preferences
+    if (controller.getLeftBumperPressed()) ElevatorPresets.resetPreferences();
 
     // manage driver control
     if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
