@@ -28,6 +28,7 @@ public class Robot extends TimedRobot {
     Autonomous.robotInit();
     Debugging.robotInit();
     Lime.robotInit();
+    ElevatorPresets.robotInit();
   }
 
   @Override

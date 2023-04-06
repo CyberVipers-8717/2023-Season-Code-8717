@@ -1,9 +1,8 @@
 package frc.robot;
 
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.ElevatorConstants;
 
 /*
@@ -14,7 +13,7 @@ import frc.robot.Constants.ElevatorConstants;
  *    Everything
  */
 
-public class ElevatorPresets implements Sendable {
+public class ElevatorPresets /*implements Sendable*/ {
   // E is for elevator encoder position (extension and retraction)
   // P is for pulley encoder position (rotation up and down)
   // S is for cube (square)
@@ -49,13 +48,9 @@ public class ElevatorPresets implements Sendable {
   private static final String kHeightThree = "ground";
   private static final String kHeightFour = "rest";
 
-  public static double currentElevatorPreset = restE;
-  public static double currentPulleyPreset = restP;
-
-  private static enum PresetType {Elevator, Pulley}
-
   private static final SendableChooser<String> height_chooser = new SendableChooser<>();
   private static final SendableChooser<String> item_chooser = new SendableChooser<>();
+  // private static final SuppliedValueWidget<Double> elevatorPresetEntry = Debugging.DebugTab.addDouble("Elevator", () -> currentElevatorPreset);
 
   private static String m_height;
   private static String m_item;
@@ -108,6 +103,12 @@ public class ElevatorPresets implements Sendable {
 
     item_chooser.setDefaultOption("Cube", kDefaultTarget);
     item_chooser.addOption("Cone", kAltTarget);
+
+    Debugging.DebugTab.add("Height", height_chooser).withPosition(6, 2).withSize(2, 1);
+    Debugging.DebugTab.add("Item", item_chooser).withPosition(6, 3).withSize(2, 1);
+
+    SmartDashboard.putNumber("Elevator preset", 5);
+    SmartDashboard.putNumber("Pulley preset", 5);
   }
 
   public void periodic() {
@@ -122,28 +123,9 @@ public class ElevatorPresets implements Sendable {
       partTwo = m_item == kDefaultHeight ? "S" : "T";
     }
 
-    Preferences.setDouble(partOne + partTwo + "E", currentElevatorPreset);
-    Preferences.setDouble(partOne + partTwo + "P", currentPulleyPreset);
+    Preferences.setDouble(partOne + partTwo + "E", SmartDashboard.getNumber("Elevator preset", 5));
+    Preferences.setDouble(partOne + partTwo + "P", SmartDashboard.getNumber("Pulley preset", 5));
   }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    // builder.setSmartDashboardType("Presets");
-    builder.addDoubleProperty("Elevator input", () -> currentElevatorPreset, (double value) -> dealWithPreset(value, PresetType.Elevator));
-    builder.addDoubleProperty("Pulley input", () -> currentPulleyPreset, (double value) -> dealWithPreset(value, PresetType.Pulley));
-  }
-
-  public static void dealWithPreset(double value, PresetType type) {
-    if (type == PresetType.Elevator) {
-      currentElevatorPreset = value;
-    } else {
-      currentPulleyPreset = value;
-    }
-  }
-
-  // dropdown for height
-  // dropdown for item
-  // box to contain elevator and pulley values
 
   /**
    * @param item An {@link Elevator.Item} to get the preset of.
