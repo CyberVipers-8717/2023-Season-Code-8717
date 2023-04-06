@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.ElevatorConstants;
 
 /*
@@ -38,15 +39,6 @@ public class ElevatorPresets /*implements Sendable*/ {
   public static double doubleTP = 39.7;
   public static double groundTE = 4;
   public static double groundTP = 210;
-
-  private static final String kDefaultTarget = "cube";
-  private static final String kAltTarget = "cone";
-
-  private static final String kDefaultHeight = "high";
-  private static final String kHeightOne = "mid";
-  private static final String kHeightTwo = "double";
-  private static final String kHeightThree = "ground";
-  private static final String kHeightFour = "rest";
 
   private static final SendableChooser<String> height_chooser = new SendableChooser<>();
   private static final SendableChooser<String> item_chooser = new SendableChooser<>();
@@ -95,14 +87,14 @@ public class ElevatorPresets /*implements Sendable*/ {
     groundTE = Preferences.getDouble("groundTE", groundTE);
     groundTP = Preferences.getDouble("groundTP", groundTP);
 
-    height_chooser.setDefaultOption("High", kDefaultHeight);
-    height_chooser.addOption("Mid", kHeightOne);
-    height_chooser.addOption("Double", kHeightTwo);
-    height_chooser.addOption("Ground", kHeightThree);
-    height_chooser.addOption("Rest", kHeightFour);
+    height_chooser.setDefaultOption("High", AutoConstants.kHeightOne);
+    height_chooser.addOption("Mid", AutoConstants.kHeightTwo);
+    height_chooser.addOption("Double", AutoConstants.kHeightThree);
+    height_chooser.addOption("Ground", AutoConstants.kHeightFour);
+    height_chooser.addOption("Rest", AutoConstants.kHeightFive);
 
-    item_chooser.setDefaultOption("Cube", kDefaultTarget);
-    item_chooser.addOption("Cone", kAltTarget);
+    item_chooser.setDefaultOption("Cube", AutoConstants.kTargetOne);
+    item_chooser.addOption("Cone", AutoConstants.kTargetTwo);
 
     Debugging.DebugTab.add("Height", height_chooser).withPosition(6, 2).withSize(2, 1);
     Debugging.DebugTab.add("Item", item_chooser).withPosition(6, 3).withSize(2, 1);
@@ -117,10 +109,10 @@ public class ElevatorPresets /*implements Sendable*/ {
 
     String partOne = m_height;
     String partTwo;
-    if (m_height == kHeightFour) {
+    if (m_height == AutoConstants.kHeightFive) {
       partTwo = "";
     } else {
-      partTwo = m_item == kDefaultHeight ? "S" : "T";
+      partTwo = m_item == AutoConstants.kTargetOne ? "S" : "T";
     }
 
     Preferences.setDouble(partOne + partTwo + "E", SmartDashboard.getNumber("Elevator preset", restE));
