@@ -1,20 +1,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.ElevatorConstants;
 
-/*
- * Todo
- *    Create a custom widget for the presets
- *    instead of two dropdowns and input fields
- * Cleanup
- *    Everything
- */
-
-public class ElevatorPresets /*implements Sendable*/ {
+public class ElevatorPresets {
   // E is for elevator encoder position (extension and retraction)
   // P is for pulley encoder position (rotation up and down)
   // S is for cube (square)
@@ -40,15 +28,9 @@ public class ElevatorPresets /*implements Sendable*/ {
   public static double groundTE = 4;
   public static double groundTP = 210;
 
-  private static final SendableChooser<String> height_chooser = new SendableChooser<>();
-  private static final SendableChooser<String> item_chooser = new SendableChooser<>();
-  // private static final SuppliedValueWidget<Double> elevatorPresetEntry = Debugging.DebugTab.addDouble("Elevator", () -> currentElevatorPreset);
-
-  private static String m_height;
-  private static String m_item;
-
-  /** Contains code that will be called when the robot is turned on. */
-  public static void robotInit() {
+  /** Resets the preferences saved on the roboRIO. */
+  public static void resetPreferences() {
+    Preferences.removeAll();
     Preferences.initDouble("restE", restE);
     Preferences.initDouble("restP", restP);
     Preferences.initDouble("highSE", highSE);
@@ -67,7 +49,10 @@ public class ElevatorPresets /*implements Sendable*/ {
     Preferences.initDouble("doubleTP", doubleTP);
     Preferences.initDouble("groundTE", groundTE);
     Preferences.initDouble("groundTP", groundTP);
+  }
 
+  /** Loads the preferences from the roboRIO. */
+  public static void loadPreferences() {
     restE = Preferences.getDouble("restE", restE);
     restP = Preferences.getDouble("restP", restP);
     highSE = Preferences.getDouble("highSE", highSE);
@@ -86,37 +71,11 @@ public class ElevatorPresets /*implements Sendable*/ {
     doubleTP = Preferences.getDouble("doubleTP", doubleTP);
     groundTE = Preferences.getDouble("groundTE", groundTE);
     groundTP = Preferences.getDouble("groundTP", groundTP);
-
-    height_chooser.setDefaultOption("High", AutoConstants.kHeightOne);
-    height_chooser.addOption("Mid", AutoConstants.kHeightTwo);
-    height_chooser.addOption("Double", AutoConstants.kHeightThree);
-    height_chooser.addOption("Ground", AutoConstants.kHeightFour);
-    height_chooser.addOption("Rest", AutoConstants.kHeightFive);
-
-    item_chooser.setDefaultOption("Cube", AutoConstants.kTargetOne);
-    item_chooser.addOption("Cone", AutoConstants.kTargetTwo);
-
-    Debugging.DebugTab.add("Height", height_chooser).withPosition(6, 2).withSize(2, 1);
-    Debugging.DebugTab.add("Item", item_chooser).withPosition(6, 3).withSize(2, 1);
-
-    SmartDashboard.putNumber("Elevator preset", restE);
-    SmartDashboard.putNumber("Pulley preset", restP);
   }
 
-  public void periodic() {
-    m_height = height_chooser.getSelected();
-    m_item = item_chooser.getSelected();
-
-    String partOne = m_height;
-    String partTwo;
-    if (m_height == AutoConstants.kHeightFive) {
-      partTwo = "";
-    } else {
-      partTwo = m_item == AutoConstants.kTargetOne ? "S" : "T";
-    }
-
-    Preferences.setDouble(partOne + partTwo + "E", SmartDashboard.getNumber("Elevator preset", restE));
-    Preferences.setDouble(partOne + partTwo + "P", SmartDashboard.getNumber("Pulley preset", restP));
+  /** Contains code that will be called when teleop is enabled. */
+  public static void teleopInit() {
+    loadPreferences();
   }
 
   /**
@@ -129,35 +88,35 @@ public class ElevatorPresets /*implements Sendable*/ {
     if (item == Elevator.Item.Cube) {
       switch (height) {
         case High:
-          return new double[] {ElevatorConstants.highSE, ElevatorConstants.highSP};
+          return new double[] {highSE, highSP};
         case Mid:
-          return new double[] {ElevatorConstants.midSE, ElevatorConstants.midSP};
+          return new double[] {midSE, midSP};
         case Ground:
-          return new double[] {ElevatorConstants.groundSE, ElevatorConstants.groundSP};
+          return new double[] {groundSE, groundSP};
         case Rest:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+          return new double[] {restE, restP};
         case Double:
-          return new double[] {ElevatorConstants.doubleSE, ElevatorConstants.doubleSP};
+          return new double[] {doubleSE, doubleSP};
         default:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+          return new double[] {restE, restP};
       }
     } else if (item == Elevator.Item.Cube) {
       switch (height) {
         case High:
-          return new double[] {ElevatorConstants.highTE, ElevatorConstants.highTP};
+          return new double[] {highTE, highTP};
         case Mid:
-          return new double[] {ElevatorConstants.midTE, ElevatorConstants.midTP};
+          return new double[] {midTE, midTP};
         case Ground:
-          return new double[] {ElevatorConstants.groundTE, ElevatorConstants.groundTP};
+          return new double[] {groundTE, groundTP};
         case Rest:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+          return new double[] {restE, restP};
         case Double:
-          return new double[] {ElevatorConstants.doubleTE, ElevatorConstants.doubleTP};
+          return new double[] {doubleTE, doubleTP};
         default:
-          return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+          return new double[] {restE, restP};
       }
     } else {
-      return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
+      return new double[] {restE, restP};
     }
   }
 
