@@ -9,6 +9,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 
+/*
+ * Todo
+ *    Refactor the drivetrain code to just simply be better
+ *    make it built different
+ */
+
 public class Autonomous {
   private static final Timer delayTimer = new Timer();
   private static final Timer waitingTimer = new Timer();
@@ -38,12 +44,12 @@ public class Autonomous {
    * Each chooser is a {@link SendableChooser} with the start delay being a number slider.
    */
   public static void robotInit() {
-    target.setDefaultOption("Cube", AutoConstants.kDefaultTarget);
-    target.addOption("Cone", AutoConstants.kAltTarget);
+    target.setDefaultOption("Cube", AutoConstants.kTargetOne);
+    target.addOption("Cone", AutoConstants.kTargetTwo);
     target.addOption("None", AutoConstants.kNoTarget);
 
-    height.setDefaultOption("High", AutoConstants.kDefaultHeight);
-    height.addOption("Mid", AutoConstants.kAltHeight);
+    height.setDefaultOption("High", AutoConstants.kHeightOne);
+    height.addOption("Mid", AutoConstants.kHeightTwo);
 
     movement.setDefaultOption("Mobility clear side", AutoConstants.kDefaultMovement);
     movement.addOption("Mobility bump side", AutoConstants.kAltDefaultMovement);
@@ -63,10 +69,10 @@ public class Autonomous {
   public static void init() {
     // target object
     switch (target.getSelected()) {
-      case AutoConstants.kDefaultTarget:
+      case AutoConstants.kTargetOne:
         Elevator.targetCube();
         break;
-      case AutoConstants.kAltTarget:
+      case AutoConstants.kTargetTwo:
         Elevator.targetCone();
         break;
       case AutoConstants.kNoTarget:
@@ -78,10 +84,10 @@ public class Autonomous {
     }
     // target height
     switch (height.getSelected()) {
-      case AutoConstants.kDefaultHeight:
+      case AutoConstants.kHeightOne:
         Elevator.targetHigh();
         break;
-      case AutoConstants.kAltHeight:
+      case AutoConstants.kHeightTwo:
         Elevator.targetMid();
         break;
       default:
@@ -89,7 +95,6 @@ public class Autonomous {
         break;
     }
     // drivetrain movement
-    // todo
     // switch (movement.getSelected()) {
     //   case AutoConstants.kDefaultMovement:
     //     break;
