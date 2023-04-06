@@ -2,12 +2,15 @@ package frc.robot;
 
 public class Constants {
   public static final class AutoConstants {
-    public static final String kDefaultTarget = "cube";
-    public static final String kAltTarget = "cone";
+    public static final String kTargetOne = "cube";
+    public static final String kTargetTwo = "cone";
     public static final String kNoTarget = "none";
 
-    public static final String kDefaultHeight = "high";
-    public static final String kAltHeight = "mid";
+    public static final String kHeightOne = "high";
+    public static final String kHeightTwo = "mid";
+    public static final String kHeightThree = "double";
+    public static final String kHeightFour = "ground";
+    public static final String kHeightFive = "rest";
 
     public static final String kDefaultMovement = "taxi clear";
     public static final String kAltDefaultMovement = "taxi bump";
