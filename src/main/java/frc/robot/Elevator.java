@@ -27,7 +27,7 @@ public class Elevator implements Sendable {
   /** Initializes the sendable. */
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Elevator");
+    //builder.setSmartDashboardType("Elevator");
     builder.addDoubleArrayProperty("Positions", () -> {
       return new double[] {getElevatorPosition(), getPulleyPosition()};
     }, null);
