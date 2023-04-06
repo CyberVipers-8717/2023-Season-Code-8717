@@ -1,15 +1,159 @@
 package frc.robot;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Constants.ElevatorConstants;
 
-public class ElevatorPresets {
+/*
+ * Todo
+ *    Create a custom widget for the presets
+ *    instead of two dropdowns and input fields
+ * Cleanup
+ *    Everything
+ */
+
+public class ElevatorPresets implements Sendable {
+  // E is for elevator encoder position (extension and retraction)
+  // P is for pulley encoder position (rotation up and down)
+  // S is for cube (square)
+  // T is for cone (triangle)
+  public static double restE = 1.5;
+  public static double restP = 5;
+  // all cube heights
+  public static double highSE = 77.5;
+  public static double highSP = 91.5;
+  public static double midSE = 18.5;
+  public static double midSP = 73.5;
+  public static double doubleSE = 1;
+  public static double doubleSP = 39;
+  public static double groundSE = 4;
+  public static double groundSP = 210;
+  // all cone heights
+  public static double highTE = 91;
+  public static double highTP = 90;
+  public static double midTE = 41;
+  public static double midTP = 74.5;
+  public static double doubleTE = 1;
+  public static double doubleTP = 39.7;
+  public static double groundTE = 4;
+  public static double groundTP = 210;
+
+  private static final String kDefaultTarget = "cube";
+  private static final String kAltTarget = "cone";
+
+  private static final String kDefaultHeight = "high";
+  private static final String kHeightOne = "mid";
+  private static final String kHeightTwo = "double";
+  private static final String kHeightThree = "ground";
+  private static final String kHeightFour = "rest";
+
+  public static double currentElevatorPreset = restE;
+  public static double currentPulleyPreset = restP;
+
+  private static enum PresetType {Elevator, Pulley}
+
+  private static final SendableChooser<String> height_chooser = new SendableChooser<>();
+  private static final SendableChooser<String> item_chooser = new SendableChooser<>();
+
+  private static String m_height;
+  private static String m_item;
+
+  /** Contains code that will be called when the robot is turned on. */
+  public static void robotInit() {
+    Preferences.initDouble("restE", restE);
+    Preferences.initDouble("restP", restP);
+    Preferences.initDouble("highSE", highSE);
+    Preferences.initDouble("highSP", highSP);
+    Preferences.initDouble("midSE", midSE);
+    Preferences.initDouble("midSP", midSP);
+    Preferences.initDouble("doubleSE", doubleSE);
+    Preferences.initDouble("doubleSP", doubleSP);
+    Preferences.initDouble("groundSE", groundSE);
+    Preferences.initDouble("groundSP", groundSP);
+    Preferences.initDouble("highTE", highTE);
+    Preferences.initDouble("highTP", highTP);
+    Preferences.initDouble("midTE", midTE);
+    Preferences.initDouble("midTP", midTP);
+    Preferences.initDouble("doubleTE", doubleTE);
+    Preferences.initDouble("doubleTP", doubleTP);
+    Preferences.initDouble("groundTE", groundTE);
+    Preferences.initDouble("groundTP", groundTP);
+
+    restE = Preferences.getDouble("restE", restE);
+    restP = Preferences.getDouble("restP", restP);
+    highSE = Preferences.getDouble("highSE", highSE);
+    highSP = Preferences.getDouble("highSP", highSP);
+    midSE = Preferences.getDouble("midSE", midSE);
+    midSP = Preferences.getDouble("midSP", midSP);
+    doubleSE = Preferences.getDouble("doubleSE", doubleSE);
+    doubleSP = Preferences.getDouble("doubleSP", doubleSP);
+    groundSE = Preferences.getDouble("groundSE", groundSE);
+    groundSP = Preferences.getDouble("groundSP", groundSP);
+    highTE = Preferences.getDouble("highTE", highTE);
+    highTP = Preferences.getDouble("highTP", highTP);
+    midTE = Preferences.getDouble("midTE", midTE);
+    midTP = Preferences.getDouble("midTP", midTP);
+    doubleTE = Preferences.getDouble("doubleTE", doubleTE);
+    doubleTP = Preferences.getDouble("doubleTP", doubleTP);
+    groundTE = Preferences.getDouble("groundTE", groundTE);
+    groundTP = Preferences.getDouble("groundTP", groundTP);
+
+    height_chooser.setDefaultOption("High", kDefaultHeight);
+    height_chooser.addOption("Mid", kHeightOne);
+    height_chooser.addOption("Double", kHeightTwo);
+    height_chooser.addOption("Ground", kHeightThree);
+    height_chooser.addOption("Rest", kHeightFour);
+
+    item_chooser.setDefaultOption("Cube", kDefaultTarget);
+    item_chooser.addOption("Cone", kAltTarget);
+  }
+
+  public void periodic() {
+    m_height = height_chooser.getSelected();
+    m_item = item_chooser.getSelected();
+
+    String partOne = m_height;
+    String partTwo;
+    if (m_height == kHeightFour) {
+      partTwo = "";
+    } else {
+      partTwo = m_item == kDefaultHeight ? "S" : "T";
+    }
+
+    Preferences.setDouble(partOne + partTwo + "E", currentElevatorPreset);
+    Preferences.setDouble(partOne + partTwo + "P", currentPulleyPreset);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    // builder.setSmartDashboardType("Presets");
+    builder.addDoubleProperty("Elevator input", () -> currentElevatorPreset, (double value) -> dealWithPreset(value, PresetType.Elevator));
+    builder.addDoubleProperty("Pulley input", () -> currentPulleyPreset, (double value) -> dealWithPreset(value, PresetType.Pulley));
+  }
+
+  public static void dealWithPreset(double value, PresetType type) {
+    if (type == PresetType.Elevator) {
+      currentElevatorPreset = value;
+    } else {
+      currentPulleyPreset = value;
+    }
+  }
+
+  // dropdown for height
+  // dropdown for item
+  // box to contain elevator and pulley values
+
   /**
-   * @return A double array containing the presets for the elevator motors and pulley motor.
-   * They are in the form of double[] {elevatorPreset, pulleyPreset}.
+   * @param item An {@link Elevator.Item} to get the preset of.
+   * @param height A {@link Elevator.Height} to get the preset of.
+   * @return A double array containing the presets for the elevator motors and pulley motor
+   * with the given item and height. The array is in the form of double[] {elevatorPreset, pulleyPreset}.
    */
-  public static double[] getTargetPresets() {
-    if (Elevator.targetItem == Elevator.Item.Cube) {
-      switch (Elevator.targetHeight) {
+  public static double[] getTargetPresets(Elevator.Item item, Elevator.Height height) {
+    if (item == Elevator.Item.Cube) {
+      switch (height) {
         case High:
           return new double[] {ElevatorConstants.highSE, ElevatorConstants.highSP};
         case Mid:
@@ -23,8 +167,8 @@ public class ElevatorPresets {
         default:
           return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
       }
-    } else {
-      switch (Elevator.targetHeight) {
+    } else if (item == Elevator.Item.Cube) {
+      switch (height) {
         case High:
           return new double[] {ElevatorConstants.highTE, ElevatorConstants.highTP};
         case Mid:
@@ -38,7 +182,17 @@ public class ElevatorPresets {
         default:
           return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
       }
+    } else {
+      return new double[] {ElevatorConstants.restE, ElevatorConstants.restP};
     }
+  }
+
+  /**
+   * @return A double array containing the presets for the elevator motors and pulley motor.
+   * They are in the form of double[] {elevatorPreset, pulleyPreset}.
+   */
+  public static double[] getTargetPresets() {
+    return getTargetPresets(Elevator.targetItem, Elevator.targetHeight);
   }
 
   /**
