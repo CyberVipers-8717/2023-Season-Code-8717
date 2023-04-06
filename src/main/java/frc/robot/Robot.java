@@ -28,7 +28,6 @@ public class Robot extends TimedRobot {
     Autonomous.robotInit();
     Debugging.robotInit();
     Lime.robotInit();
-    ElevatorPresets.robotInit();
   }
 
   @Override
@@ -65,11 +64,15 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     Drivetrain.usingController = false;
     Elevator.targetCube();
+    ElevatorPresets.loadPreferences();
   }
 
   @Override
   public void teleopPeriodic() {
     Drivetrain.feed();
+
+    // reset preferences
+    if (controller.getLeftBumperPressed()) ElevatorPresets.resetPreferences();
 
     // manage driver control
     if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
