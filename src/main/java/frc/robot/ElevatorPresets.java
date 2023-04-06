@@ -107,8 +107,8 @@ public class ElevatorPresets /*implements Sendable*/ {
     Debugging.DebugTab.add("Height", height_chooser).withPosition(6, 2).withSize(2, 1);
     Debugging.DebugTab.add("Item", item_chooser).withPosition(6, 3).withSize(2, 1);
 
-    SmartDashboard.putNumber("Elevator preset", highSE);
-    SmartDashboard.putNumber("Pulley preset", highSP);
+    SmartDashboard.putNumber("Elevator preset", restE);
+    SmartDashboard.putNumber("Pulley preset", restP);
   }
 
   public void periodic() {
@@ -123,8 +123,8 @@ public class ElevatorPresets /*implements Sendable*/ {
       partTwo = m_item == kDefaultHeight ? "S" : "T";
     }
 
-    Preferences.setDouble(partOne + partTwo + "E", SmartDashboard.getNumber("Elevator preset", highSE));
-    Preferences.setDouble(partOne + partTwo + "P", SmartDashboard.getNumber("Pulley preset", highSP));
+    Preferences.setDouble(partOne + partTwo + "E", SmartDashboard.getNumber("Elevator preset", restE));
+    Preferences.setDouble(partOne + partTwo + "P", SmartDashboard.getNumber("Pulley preset", restP));
   }
 
   /**
