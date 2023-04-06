@@ -1,1 +1,146 @@
-[]
+[
+  {
+    "name": "/Preferences/restE",
+    "type": "double",
+    "value": 1.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/restP",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/highSE",
+    "type": "double",
+    "value": 77.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/highSP",
+    "type": "double",
+    "value": 91.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/midSE",
+    "type": "double",
+    "value": 18.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/midSP",
+    "type": "double",
+    "value": 73.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/doubleSE",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/doubleSP",
+    "type": "double",
+    "value": 39.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/groundSE",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/groundSP",
+    "type": "double",
+    "value": 210.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/highTE",
+    "type": "double",
+    "value": 91.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/highTP",
+    "type": "double",
+    "value": 90.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/midTE",
+    "type": "double",
+    "value": 41.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/midTP",
+    "type": "double",
+    "value": 74.5,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/doubleTE",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/doubleTP",
+    "type": "double",
+    "value": 39.7,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/groundTE",
+    "type": "double",
+    "value": 4.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/groundTP",
+    "type": "double",
+    "value": 210.0,
+    "properties": {
+      "persistent": true
+    }
+  }
+]
