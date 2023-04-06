@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.util.Map;
+
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -25,9 +27,8 @@ public class Autonomous {
   private static final SendableChooser<String> height = new SendableChooser<>();
   private static final SendableChooser<String> movement = new SendableChooser<>();
   private static final SendableChooser<String> rotation = new SendableChooser<>();
-  private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0)
-  .withWidget(BuiltInWidgets.kNumberSlider).withPosition(2, 0).getEntry();
-
+  private static final GenericEntry delayStart = AutoTab.add("Delay Start", 0).withWidget(BuiltInWidgets.kNumberSlider)
+  .withProperties(Map.of("min", 0, "max", 10)).withPosition(2, 0).getEntry();
   private static String m_movement;
   private static String m_rotation;
   private static double m_delayStart;
