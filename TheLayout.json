@@ -98,6 +98,32 @@
               "_glyph": 148,
               "_showGlyph": false
             }
+          },
+          "3,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elevator preset",
+              "_title": "Elevator preset",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "4,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Pulley preset",
+              "_title": "Pulley preset",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
           }
         }
       }
