@@ -28,9 +28,18 @@ public class ArmPresets {
   public static double groundTE = 4;
   public static double groundTP = 210;
 
-  /** Resets the preferences saved on the roboRIO. */
+  private static String[] allArmPreferenceNames = {
+    "restE", "restP", "highSE", "highSP", "midSE", "midSP",
+    "doubleSE", "doubleSP", "groundSE", "groundSP",
+    "highTE", "highTP", "midTE", "midTP", "doubleTE", "doubleTP",
+    "groundTE", "groundTP"
+  };
+
+  /** Resets the {@link Arm} preferences saved on the roboRIO. */
   public static void resetPreferences() {
-    Preferences.removeAll();
+    for (String key : allArmPreferenceNames) {
+      Preferences.remove(key);
+    }
     Preferences.initDouble("restE", restE);
     Preferences.initDouble("restP", restP);
     Preferences.initDouble("highSE", highSE);
