@@ -18,8 +18,8 @@ import frc.robot.Constants.AutoConstants;
  */
 
 public class Autonomous {
-  private static final Timer delayTimer = new Timer();
   private static final Timer waitingTimer = new Timer();
+  private static final Timer delayTimer = new Timer();
 
   public static final ShuffleboardTab AutoTab = Shuffleboard.getTab("Autonomous");
 
@@ -71,28 +71,28 @@ public class Autonomous {
     // target object
     switch (target.getSelected()) {
       case AutoConstants.kTargetOne:
-        Elevator.targetCube();
+        Arm.targetCube();
         break;
       case AutoConstants.kTargetTwo:
-        Elevator.targetCone();
+        Arm.targetCone();
         break;
       case AutoConstants.kNoTarget:
-        Elevator.targetItem = Elevator.Item.None;
+        Arm.targetItem = Arm.Item.None;
         break;
       default:
-        Elevator.targetCube();
+        Arm.targetCube();
         break;
     }
     // target height
     switch (height.getSelected()) {
       case AutoConstants.kHeightOne:
-        Elevator.targetHigh();
+        Arm.targetHigh();
         break;
       case AutoConstants.kHeightTwo:
-        Elevator.targetMid();
+        Arm.targetMid();
         break;
       default:
-        Elevator.targetHigh();
+        Arm.targetHigh();
         break;
     }
     // drivetrain movement
@@ -115,7 +115,7 @@ public class Autonomous {
 
     Drivetrain.zeroDriveEncoders();
     Drivetrain.Gyro.saveStartingAngle();
-    Elevator.zeroEncoders();
+    Arm.zeroEncoders();
     Hand.close();
 
     delayTimer.start();
@@ -140,7 +140,7 @@ public class Autonomous {
         // wait for the baseDelay amount of time between doing things
         if (currentStep == 0) {
           // if we have no target move on to next sequence
-          if (Elevator.targetItem == Elevator.Item.None) {
+          if (Arm.targetItem == Arm.Item.None) {
             currentStep = 0;
             superStep++;
           } else {
@@ -149,9 +149,9 @@ public class Autonomous {
           }
         } else if (currentStep == 1) {
           // move the arm
-          if (!Elevator.armAtTargets()) Elevator.runArm();
+          if (!Arm.armAtTargets()) Arm.runArm();
           else {
-            Elevator.stopMotor();
+            Arm.stopMotor();
             restartWaitingTimer();
             currentStep++;
           }
@@ -162,10 +162,10 @@ public class Autonomous {
           currentStep++;
         } else if (currentStep == 3) {
           // retract the arm
-          Elevator.targetRest();
-          if (!Elevator.armAtTargets()) Elevator.runArm();
+          Arm.targetRest();
+          if (!Arm.armAtTargets()) Arm.runArm();
           else {
-            Elevator.stopMotor();
+            Arm.stopMotor();
             restartWaitingTimer();
             currentStep++;
           }
@@ -273,7 +273,6 @@ public class Autonomous {
   /** Contains code that is run in autonomousPeriodic. */
   public static void periodic() {
     Drivetrain.feed();
-
     if (timeElapsed(delayTimer, m_delayStart)) {
       moveArm(0);
       moveRobot(1);

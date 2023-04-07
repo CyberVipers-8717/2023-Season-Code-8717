@@ -23,7 +23,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     robotLifeTimer.start();
     Drivetrain.robotInit();
-    Elevator.robotInit();
+    Arm.robotInit();
     Hand.robotInit();
     Autonomous.robotInit();
     Debugging.robotInit();
@@ -35,8 +35,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Joystick", !Drivetrain.usingController);
     SmartDashboard.putBoolean("Hard Braking", Drivetrain.getDriveIdle()==IdleMode.kBrake);
-    SmartDashboard.putBoolean("Targeting Cube", Elevator.targetItem == Elevator.Item.Cube);
-    SmartDashboard.putBoolean("Targeting Cone", Elevator.targetItem == Elevator.Item.Cone);
+    SmartDashboard.putBoolean("Targeting Cube", Arm.targetItem == Arm.Item.Cube);
+    SmartDashboard.putBoolean("Targeting Cone", Arm.targetItem == Arm.Item.Cone);
     SmartDashboard.putString("Current Pipeline", Lime.getCurrentPipeline());
 
     // lime auto april tag
@@ -63,8 +63,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     Drivetrain.usingController = false;
-    Elevator.targetCube();
-    ElevatorPresets.loadPreferences();
+    Arm.targetCube();
+    ArmPresets.loadPreferences();
   }
 
   @Override
@@ -72,17 +72,17 @@ public class Robot extends TimedRobot {
     Drivetrain.feed();
 
     // reset preferences
-    if (controller.getLeftBumperPressed()) ElevatorPresets.resetPreferences();
+    if (controller.getLeftBumperPressed()) ArmPresets.resetPreferences();
 
     // manage driver control
     if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
 
     // targetting object
-    if (controller.getRightBumperPressed()) Elevator.toggleTarget();
+    if (controller.getRightBumperPressed()) Arm.toggleTarget();
 
     // zero encoders
     if (controller.getLeftThumbPressed()) {
-      Elevator.zeroEncoders();
+      Arm.zeroEncoders();
       Drivetrain.zeroDriveEncoders();
     }
 
@@ -111,16 +111,16 @@ public class Robot extends TimedRobot {
     // elevator and pulley
     if (!controller.usingPOV()) {
       // manual
-      if (controller.getY()) Elevator.rotateDown();
-      else if (controller.getA()) Elevator.rotateUp();
-      else Elevator.stopPulley();
+      if (controller.getY()) Arm.rotateDown();
+      else if (controller.getA()) Arm.rotateUp();
+      else Arm.stopPulley();
 
-      if (controller.getX()) Elevator.extend();
-      else if (controller.getB()) Elevator.retract();
-      else Elevator.stopElevator();
+      if (controller.getX()) Arm.extend();
+      else if (controller.getB()) Arm.retract();
+      else Arm.stopElevator();
     } else {
       // cool automatic
-      Elevator.handlePOV(controller.getPOV());
+      Arm.handlePOV(controller.getPOV());
     }
 
     // hand
@@ -132,13 +132,13 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     Drivetrain.defaultFlags();
     Drivetrain.stopMotor();
-    Elevator.stopMotor();
+    Arm.stopMotor();
   }
 
   @Override
   public void disabledPeriodic() {
     Drivetrain.stopMotor();
-    Elevator.stopMotor();
+    Arm.stopMotor();
   }
 
   @Override
