@@ -16,8 +16,8 @@ public class ArmPresets {
   public static double midSP = 73.5;
   public static double doubleSE = 1;
   public static double doubleSP = 39;
-  public static double groundSE = 4;
-  public static double groundSP = 210;
+  public static double groundSE = 2;
+  public static double groundSP = 170;
   // all cone heights
   public static double highTE = 91;
   public static double highTP = 90;
@@ -25,8 +25,8 @@ public class ArmPresets {
   public static double midTP = 74.5;
   public static double doubleTE = 1;
   public static double doubleTP = 39.7;
-  public static double groundTE = 4;
-  public static double groundTP = 210;
+  public static double groundTE = 2;
+  public static double groundTP = 170;
 
   private static String[] allArmPreferenceNames = {
     "restE", "restP", "highSE", "highSP", "midSE", "midSP",
@@ -109,7 +109,7 @@ public class ArmPresets {
         default:
           return new double[] {restE, restP};
       }
-    } else if (item == Arm.Item.Cube) {
+    } else if (item == Arm.Item.Cone) {
       switch (height) {
         case High:
           return new double[] {highTE, highTP};
