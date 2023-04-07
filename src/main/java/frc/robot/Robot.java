@@ -74,11 +74,11 @@ public class Robot extends TimedRobot {
     // reset preferences
     if (controller.getLeftBumperPressed()) ArmPresets.resetPreferences();
 
-    // manage driver control
-    if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
-
     // targetting object
     if (controller.getRightBumperPressed()) Arm.toggleTarget();
+
+    // manage driver control
+    if (controller.getStartPressed()) Drivetrain.toggleDriverControl();
 
     // zero encoders
     if (controller.getLeftThumbPressed()) {
