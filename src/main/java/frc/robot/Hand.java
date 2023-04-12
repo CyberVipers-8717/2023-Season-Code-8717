@@ -63,12 +63,4 @@ public class Hand implements Sendable {
         return "Off";
     }
   }
-
-  /**
-   * @return Boolean indicating if the hand is closed or not, true being the hand
-   * is closed and most likely holding an object.
-   */
-  public static boolean getIsClosed() {
-    return solenoid.get() == closeChannel;
-  }
 }
