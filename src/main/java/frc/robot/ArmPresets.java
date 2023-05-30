@@ -24,7 +24,7 @@ public class ArmPresets {
   public static double midTE = 41;
   public static double midTP = 74.5;
   public static double doubleTE = 1;
-  public static double doubleTP = 39.7;
+  public static double doubleTP = 36;
   public static double groundTE = 2;
   public static double groundTP = 170;
 

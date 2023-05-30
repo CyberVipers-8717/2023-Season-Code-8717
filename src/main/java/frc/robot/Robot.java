@@ -31,7 +31,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
+    // SmartDashboard.putBoolean("Tank Drive", Drivetrain.kTankFlag);
     SmartDashboard.putBoolean("Using Joystick", !Drivetrain.usingController);
     SmartDashboard.putBoolean("Hard Braking", Drivetrain.getDriveIdle()==IdleMode.kBrake);
     SmartDashboard.putBoolean("Targeting Cube", Arm.targetItem == Arm.Item.Cube);
@@ -52,6 +52,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Autonomous.init();
+    Autonomous.loadPreferences();
   }
 
   @Override
@@ -99,8 +100,9 @@ public class Robot extends TimedRobot {
     else {
       if (!Drivetrain.usingController) {
         // joystick drive
-        if (Drivetrain.kTankFlag) Drivetrain.tank(stickL, stickR);
-        else Drivetrain.arcade(stickL, stickR);
+        Drivetrain.arcade(stickL, stickR);
+        // if (Drivetrain.kTankFlag) Drivetrain.tank(stickL, stickR);
+        // else Drivetrain.arcade(stickL, stickR);
       } else {
         // controller drive
         Drivetrain.arcade(controller.getArcadeAxes());

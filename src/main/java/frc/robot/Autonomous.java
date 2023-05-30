@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.Map;
 
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -18,6 +19,8 @@ import frc.robot.Constants.AutoConstants;
  */
 
 public class Autonomous {
+  public static double balanceDistance = 40;
+
   private static final Timer waitingTimer = new Timer();
   private static final Timer delayTimer = new Timer();
 
@@ -120,6 +123,12 @@ public class Autonomous {
 
     delayTimer.start();
     restartWaitingTimer();
+
+    Preferences.initDouble("balance distance", balanceDistance);
+  }
+
+  public static void loadPreferences() {
+    balanceDistance = Preferences.getDouble("balance distance", 40);
   }
 
   /**
@@ -216,7 +225,7 @@ public class Autonomous {
             }
             break;
           case AutoConstants.kAltMovement:
-            if (!Drivetrain.tracksAtPosition(40, 40)) Drivetrain.moveTracksTo(40, 40);
+            if (!Drivetrain.tracksAtPosition(balanceDistance, balanceDistance)) Drivetrain.moveTracksTo(balanceDistance, balanceDistance);
             else {
               restartWaitingTimer();
               currentStep++;

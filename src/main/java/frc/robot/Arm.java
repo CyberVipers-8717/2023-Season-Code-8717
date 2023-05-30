@@ -131,13 +131,14 @@ public class Arm implements Sendable {
   // the encoder difference to begin scaling the command down so as not to overshoot the target
   private static final double maxPulCom = 0.85;
   // the maximum command that can be given
+  private static double tempPulCom = maxPulCom;
 
   /**
    * Runs the pulley motor until its encoder position matches the target encoder position.
    * @param target A double indicating the target encoder position of the pulley motor.
    */
   private static void pulleyTo(double target) {
-    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minPulDiff, maxPulCom, whenPulCom);
+    Robot.moveMotorTo(target, getPulleyPosition(), pulleyMotor, minPulDiff, tempPulCom, whenPulCom);
   }
   
   /**
@@ -156,6 +157,11 @@ public class Arm implements Sendable {
    * The array is in the form of double[] {elevatorTarget, pulleyTarget}.
    */
   private static void armTo(double[] targets) {
+    if (Arm.targetItem == Arm.Item.Cone && Arm.targetHeight == Arm.Height.High) {
+      tempPulCom = maxPulCom / 2;
+    } else {
+      tempPulCom = maxPulCom;
+    }
     elevatorTo(targets[0]);
     pulleyTo(targets[1]);
   }

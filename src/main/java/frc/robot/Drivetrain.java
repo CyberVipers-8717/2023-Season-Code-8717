@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
 public class Drivetrain implements Sendable {
-  private static final double arcadeForwardScale = 0.95;
+  private static final double arcadeForwardScale = 1;
   private static final double arcadeRotationScale = 0.65;
   private static final double tankScale = 0.8;
   private static final double minimumEncoderDifference = 0.5;
