@@ -10,7 +10,7 @@
   {
     "name": "/Preferences/restP",
     "type": "double",
-    "value": 10.0,
+    "value": 5.0,
     "properties": {
       "persistent": true
     }
